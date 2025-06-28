@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from db.session import Base
+from models.product import Product
 
 class Store(Base):
     __tablename__ = "stores"
@@ -11,5 +12,5 @@ class Store(Base):
 
     products = relationship("Product", back_populates="store")
 
-    
+
 
