@@ -30,4 +30,4 @@ def delete_product(db: Session, product_id: int):
     if product:
         db.delete(product)
         db.commit()
-    return product 
+    return product
