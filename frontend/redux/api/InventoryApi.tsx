@@ -11,9 +11,20 @@ export const InventoryApi = createApi({
         getInventory : builder.query<IInventoryData,string>({
          query : () => `/api/inventory`
         }),
+        addInventory : builder.mutation({
+         query :  (data) => ({
+            url : '/api/inventory',
+            method: "POST",
+            body : data,
+         }),
+         invalidatesTags : ['inventory']
+        }),
+        getIndividualInventory : builder.query<IInventoryData,string>({
+         query : (id) => `/api/inventory/${id}`
+        })
 
 })
 })
 
 
-export const { useGetInventoryQuery} = InventoryApi
+export const { useGetInventoryQuery , useAddInventoryMutation} = InventoryApi;
