@@ -4,8 +4,7 @@ from app.schemas.department import DepartmentCreate, DepartmentOut
 from db.session import SessionLocal
 from app.crud import department as crud
 
-router = APIRouter()
-
+router = APIRouter()     
 def get_db():
     db = SessionLocal()
     try:
