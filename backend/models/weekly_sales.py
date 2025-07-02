@@ -8,6 +8,6 @@ class WeeklySales(Base):
     id = Column(Integer, primary_key=True)
     store_id = Column(Integer, ForeignKey("stores.id"))
     department_id = Column(Integer, ForeignKey("departments.id"))
-    date = Column(Date, nullable=False)
+    week_date = Column(Date, nullable=False)
     weekly_sales = Column(Float, nullable=False)
 

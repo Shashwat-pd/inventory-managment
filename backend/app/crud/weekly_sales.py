@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 from typing import List
 
-from app.models.weekly_sales import WeeklySales as WeeklySalesModel
+from models.weekly_sales import WeeklySales as WeeklySalesModel
 from app.schemas.weekly_sales import WeeklySalesCreate
 
 def get_weekly_sales(

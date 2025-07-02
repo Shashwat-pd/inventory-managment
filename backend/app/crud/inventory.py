@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from models.inventory import Inventory
 from app.schemas.inventory import InventoryCreate
 
-def get_inventory(db: Session, store_id: int, product_id: str):
+def get_inventory(db: Session, store_id: int, product_id: int):
     return (
         db.query(Inventory)
           .filter(
@@ -22,7 +22,7 @@ def create_inventory(db: Session, inv: InventoryCreate):
     db.refresh(obj)
     return obj
 
-def update_inventory(db: Session, store_id: int, product_id: str, stock_level: int):
+def update_inventory(db: Session, store_id: int, product_id: int, stock_level: int):
     obj = get_inventory(db, store_id, product_id)
     if not obj:
         return None
@@ -31,7 +31,7 @@ def update_inventory(db: Session, store_id: int, product_id: str, stock_level: i
     db.refresh(obj)
     return obj
 
-def delete_inventory(db: Session, store_id: int, product_id: str):
+def delete_inventory(db: Session, store_id: int, product_id: int):
     obj = get_inventory(db, store_id, product_id)
     if not obj:
         return None
