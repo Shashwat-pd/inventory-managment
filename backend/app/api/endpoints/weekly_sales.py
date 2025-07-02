@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
 
-from app.database import get_db
 import app.crud.weekly_sales as crud
+from db.get_db import get_db
 from app.schemas.weekly_sales import WeeklySalesCreate, WeeklySalesBase as WeeklySalesOut
 
 router = APIRouter(prefix="/weekly_sales", tags=["weekly_sales"])

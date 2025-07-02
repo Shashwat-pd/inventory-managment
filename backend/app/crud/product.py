@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.models.product import Product as ProductModel
+from models.product import Product as ProductModel
 from app.schemas.product import ProductCreate
 
 def get_product(db: Session, product_id: str) -> ProductModel | None:

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import date
 
-from app.models.forecast import Forecast as ForecastModel
+from models.forecast import Forecast as ForecastModel
 from app.schemas.forecast import ForecastCreate
 
 def get_forecast(

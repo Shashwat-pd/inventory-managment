@@ -3,11 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
 
-from app.database import get_db
+from db.get_db import get_db
 from app.crud.forecast import (
     get_forecast,
     get_forecasts,
-    create_forecast,
 )
 from app.schemas.forecast import ForecastCreate, ForecastOut
 

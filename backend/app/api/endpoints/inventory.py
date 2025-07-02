@@ -4,14 +4,9 @@ from db.session import SessionLocal
 from app.schemas.product import ProductCreate, ProductOut
 from app.crud import product as crud_product
 
-router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+from db.get_db import get_db
+router = APIRouter()
 
 @router.post("/", response_model=ProductOut)
 def create(product: ProductCreate, db: Session = Depends(get_db)):

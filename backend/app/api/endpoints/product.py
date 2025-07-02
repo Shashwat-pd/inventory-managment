@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.database import get_db
 import app.crud.product as crud
+from db.get_db import get_db
 from app.schemas.product import ProductCreate, ProductOut
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -13,7 +13,6 @@ def create_product(
     prod: ProductCreate,
     db: Session = Depends(get_db)
 ):
-    # if you prefer to enforce SKU uniqueness you could check here
     return crud.create_product(db, prod)
 
 @router.get("/", response_model=List[ProductOut])
