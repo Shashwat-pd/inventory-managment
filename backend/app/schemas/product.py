@@ -2,15 +2,16 @@ from pydantic import BaseModel
 
 class ProductBase(BaseModel):
     name: str
-    description: str | None = None
     price: float
-    quantity: int
+    department_id: int
+    sku: str | None = None
+    description: str | None = None
 
 class ProductCreate(ProductBase):
     pass
 
 class ProductOut(ProductBase):
-    id: int
+    id: str
 
     class Config:
         orm_mode = True

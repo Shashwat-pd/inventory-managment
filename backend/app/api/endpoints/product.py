@@ -13,6 +13,7 @@ def create_product(
     prod: ProductCreate,
     db: Session = Depends(get_db)
 ):
+    # if you prefer to enforce SKU uniqueness you could check here
     return crud.create_product(db, prod)
 
 @router.get("/", response_model=List[ProductOut])
