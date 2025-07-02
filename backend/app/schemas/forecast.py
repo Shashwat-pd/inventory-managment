@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import date
 
-class Forecast(BaseModel):
+class ForecastBase(BaseModel):
     store_id: int
     department_id: int
     week_date: date

@@ -4,7 +4,6 @@ class ProductBase(BaseModel):
     name: str
     price: float
     department_id: int
-    sku: str | None = None
     description: str | None = None
 
 class ProductCreate(ProductBase):

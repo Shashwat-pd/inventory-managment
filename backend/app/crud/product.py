@@ -1,56 +1,38 @@
-from fastapi import APIRouter, Depends, HTTPException
+
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.database import get_db
-import app.crud.product as crud
-from app.schemas.product import ProductCreate, ProductOut
+from app.models.product import Product as ProductModel
+from app.schemas.product import ProductCreate
 
-router = APIRouter(prefix="/products", tags=["products"])
+def get_product(db: Session, product_id: str) -> ProductModel | None:
+    return db.query(ProductModel).filter(ProductModel.id == product_id).first()
 
-@router.post("/", response_model=ProductOut)
-def create_product(
-    prod: ProductCreate,
-    db: Session = Depends(get_db)
-):
-    return crud.create_product(db, prod)
+def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[ProductModel]:
+    return db.query(ProductModel).offset(skip).limit(limit).all()
 
-@router.get("/", response_model=List[ProductOut])
-def list_products(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    return crud.get_products(db, skip, limit)
+def create_product(db: Session, prod: ProductCreate) -> ProductModel:
+    db_prod = ProductModel(**prod.dict())
+    db.add(db_prod)
+    db.commit()
+    db.refresh(db_prod)
+    return db_prod
 
-@router.get("/{product_id}", response_model=ProductOut)
-def read_product(
-    product_id: str,
-    db: Session = Depends(get_db)
-):
-    obj = crud.get_product(db, product_id)
-    if not obj:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return obj
+def update_product(db: Session, product_id: str, prod: ProductCreate) -> ProductModel | None:
+    db_prod = get_product(db, product_id)
+    if not db_prod:
+        return None
+    for field, value in prod.dict().items():
+        setattr(db_prod, field, value)
+    db.commit()
+    db.refresh(db_prod)
+    return db_prod
 
-@router.put("/{product_id}", response_model=ProductOut)
-def update_product_route(
-    product_id: str,
-    prod: ProductCreate,
-    db: Session = Depends(get_db)
-):
-    obj = crud.update_product(db, product_id, prod)
-    if not obj:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return obj
-
-@router.delete("/{product_id}", response_model=ProductOut)
-def delete_product_route(
-    product_id: str,
-    db: Session = Depends(get_db)
-):
-    obj = crud.delete_product(db, product_id)
-    if not obj:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return obj
+def delete_product(db: Session, product_id: str) -> ProductModel | None:
+    db_prod = get_product(db, product_id)
+    if not db_prod:
+        return None
+    db.delete(db_prod)
+    db.commit()
+    return db_prod
 
