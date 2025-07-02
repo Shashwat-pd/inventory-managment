@@ -5,6 +5,8 @@ from db.session import SessionLocal
 from app.crud import department as crud
 
 from db.get_db import get_db
+
+router = APIRouter()
 @app.post("/stores/{store_id}/departments/", response_model=StoreDepartmentOut)
 def attach_dept_to_store(
     store_id: int,

@@ -10,7 +10,7 @@ from app.crud.forecast import (
 )
 from app.schemas.forecast import ForecastCreate, ForecastOut
 
-router = APIRouter(prefix="/forecasts", tags=["forecasts"])
+router = APIRouter()
 
 @router.get("/", response_model=List[ForecastOut])
 def list_forecasts(

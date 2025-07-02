@@ -6,7 +6,7 @@ import app.crud.product as crud
 from db.get_db import get_db
 from app.schemas.product import ProductCreate, ProductOut
 
-router = APIRouter(prefix="/products", tags=["products"])
+router = APIRouter()
 
 @router.post("/", response_model=ProductOut)
 def create_product(
