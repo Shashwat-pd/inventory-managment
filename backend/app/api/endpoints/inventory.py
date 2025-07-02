@@ -31,7 +31,7 @@ def read_one(product_id: int, db: Session = Depends(get_db)):
     return product
 @router.get("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def read_inventory(
-    store_id: int, product_id: str, db: Session = Depends(get_db)
+    store_id: int, product_id: int,department_id:int, db: Session = Depends(get_db)
 ):
     obj = crud.get_inventory(db, store_id,department_id, product_id)
     if not obj:
@@ -42,7 +42,8 @@ def read_inventory(
 @router.put("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def update_inventory_route(
     store_id: int,
-    product_id: str,
+    product_id: int,
+    department_id: int,
     inv: InventoryCreate,
     db: Session = Depends(get_db),
 ):
@@ -53,7 +54,7 @@ def update_inventory_route(
 
 @router.delete("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def delete_inventory_route(
-    store_id: int, product_id: str, db: Session = Depends(get_db)
+    store_id: int, product_id: int, department_id:int, db: Session = Depends(get_db)
 ):
     deleted = crud.delete_inventory(db, store_id,department_id, product_id)
     if not deleted:

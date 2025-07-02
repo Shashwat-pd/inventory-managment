@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, Float, Date, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from db.session import Base
-from models.store import Store
-from models.department import Department
 
 class WeeklySales(Base):
     __tablename__ = "weekly_sales"
