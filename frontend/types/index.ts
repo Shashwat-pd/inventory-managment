@@ -3,12 +3,14 @@ export interface BasicResponse {
   Message: string;
 }
 
-export interface IInventoryData extends BasicResponse {
-  Data: {
-    name: string;
-    description: string;
-    price: number;
-    quantity: number;
-    id: number;
-  }[];
+export interface IInventoryData {
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  id: number;
 }
+[];
+
+
+
