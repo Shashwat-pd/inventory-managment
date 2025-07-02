@@ -1,13 +1,19 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.schemas.department import DepartmentCreate, DepartmentOut
-from db.session import SessionLocal
-from app.crud import department as crud
+from typing import List
 
-from db.get_db import get_db
-
+from models.department import Department
+from app.schemas.department import DepartmentOut
+from app.schemas.store_department import (
+    StoreDepartmentCreate,
+    StoreDepartmentOut,
+)
+from app.crud.store_department import (
+    add_department_to_store,
+    get_departments_for_store,
+)
 router = APIRouter()
-@app.post("/stores/{store_id}/departments/", response_model=StoreDepartmentOut)
+@router.post("/stores/{store_id}/departments/", response_model=StoreDepartmentOut)
 def attach_dept_to_store(
     store_id: int,
     data: StoreDepartmentCreate,
@@ -16,7 +22,7 @@ def attach_dept_to_store(
     # ensure data.store_id == store_id, then:
     return add_department_to_store(db, data)
 
-@app.get("/stores/{store_id}/departments/", response_model=List[DepartmentOut])
+@router.get("/stores/{store_id}/departments/", response_model=List[DepartmentOut])
 def list_depts_in_store(store_id: int, db: Session = Depends(get_db)):
     links = get_departments_for_store(db, store_id)
     # fetch the actual Department objects:

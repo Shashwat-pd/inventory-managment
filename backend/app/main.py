@@ -16,6 +16,7 @@ import models.product
 import models.weekly_sales
 import models.inventory
 import models.forecast
+import models.store_department
 
 Base.metadata.create_all(bind=engine)
 
