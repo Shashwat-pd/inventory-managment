@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.schemas.department import DepartmentCreate, DepartmentOut
-from db.session import SessionLocal
 from app.crud import department as crud
 
 from db.get_db import get_db

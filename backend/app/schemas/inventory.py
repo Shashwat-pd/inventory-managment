@@ -3,6 +3,7 @@ from datetime import datetime
 
 class InventoryBase(BaseModel):
     store_id: int
+    inventory_id: int
     product_id: int
     stock_level: int = 0
 

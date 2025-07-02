@@ -4,7 +4,7 @@ from db.session import Base
 from models.product import Product
 from models.store_department import StoreDepartment
 from models.department import Department
-
+from models.weekly_sales import WeeklySales
 
 class Store(Base):
     __tablename__ = "stores"
@@ -28,3 +28,4 @@ class Store(Base):
     )
     inventories = relationship("Inventory", back_populates="store")
     forecasts = relationship("Forecast", back_populates="store")
+    weekly_sales = relationship("WeeklySales", back_populates="store")

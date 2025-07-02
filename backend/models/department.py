@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from db.session import Base
 from models.store_department import StoreDepartment
 from models.store import Store
-
+from models.weekly_sales import WeeklySales
 
 class Department(Base):
     __tablename__ = "departments"

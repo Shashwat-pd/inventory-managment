@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.schemas.store import StoreCreate, StoreOut
-from db.session import SessionLocal
 from app.crud import store as crud
 
 from db.get_db import get_db
