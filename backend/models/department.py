@@ -10,7 +10,6 @@ class Department(Base):
 
     id = Column(Integer, primary_key=True, index = True)
     name = Column(String, nullable=False)
-    description = Column(String, nullable=False)
 
     products = relationship("Product", back_populates="department")
 
@@ -24,5 +23,5 @@ class Department(Base):
         secondary="store_department",
         back_populates="departments",
     )
-    inventories = relationship("Inventory", back_populates="store")
-    forecasts = relationship("Forecast", back_populates="store")
+    inventories = relationship("Inventory", back_populates="department")
+    forecasts = relationship("Forecast", back_populates="department")

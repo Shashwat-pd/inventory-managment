@@ -26,11 +26,11 @@ def list_inventories(
 
 @router.get("/{product_id}", response_model=ProductOut)
 def read_one(product_id: int, db: Session = Depends(get_db)):
-    product = crud_product.get_product_by_id(db, product_id)
+    product = crud_product.get_product(db, product_id)
     if not product:
         raise HTTPException(status_code=404, detail = "Product not found")
     return product
-@@router.get("/{store_id}/{product_id}", response_model=InventoryOut)
+@router.get("/{store_id}/{product_id}", response_model=InventoryOut)
 def read_inventory(
     store_id: int, product_id: str, db: Session = Depends(get_db)
 ):

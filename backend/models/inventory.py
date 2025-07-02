@@ -11,8 +11,14 @@ class Inventory(Base):
         primary_key=True,
         index=True
     )
+    department_id = Column(
+        Integer,
+        ForeignKey("departments.id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True
+    )
     product_id = Column(
-        String(10),
+        Integer,
         ForeignKey("products.id", ondelete="CASCADE"),
         primary_key=True,
         index=True
@@ -37,4 +43,7 @@ class Inventory(Base):
         "Product",
         back_populates="inventories"
     )
-
+    department = relationship(
+        "Department",
+        back_populates="inventories"
+    )

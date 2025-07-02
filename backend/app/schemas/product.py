@@ -10,7 +10,7 @@ class ProductCreate(ProductBase):
     pass
 
 class ProductOut(ProductBase):
-    id: str
+    id: int
 
     class Config:
         orm_mode = True

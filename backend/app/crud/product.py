@@ -5,7 +5,7 @@ from typing import List
 from models.product import Product as ProductModel
 from app.schemas.product import ProductCreate
 
-def get_product(db: Session, product_id: str) -> ProductModel | None:
+def get_product(db: Session, product_id: int) -> ProductModel | None:
     return db.query(ProductModel).filter(ProductModel.id == product_id).first()
 
 def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[ProductModel]:
@@ -18,7 +18,7 @@ def create_product(db: Session, prod: ProductCreate) -> ProductModel:
     db.refresh(db_prod)
     return db_prod
 
-def update_product(db: Session, product_id: str, prod: ProductCreate) -> ProductModel | None:
+def update_product(db: Session, product_id: int, prod: ProductCreate) -> ProductModel | None:
     db_prod = get_product(db, product_id)
     if not db_prod:
         return None
@@ -28,7 +28,7 @@ def update_product(db: Session, product_id: str, prod: ProductCreate) -> Product
     db.refresh(db_prod)
     return db_prod
 
-def delete_product(db: Session, product_id: str) -> ProductModel | None:
+def delete_product(db: Session, product_id: int) -> ProductModel | None:
     db_prod = get_product(db, product_id)
     if not db_prod:
         return None

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
+from db.get_db import get_db
 from models.department import Department
 from app.schemas.department import DepartmentOut
 from app.schemas.store_department import (
