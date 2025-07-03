@@ -17,7 +17,13 @@ class StoreDepartment(Base):
         ForeignKey("departments.id", ondelete="CASCADE"),
         primary_key=True,
     )
-
-    store = relationship("Store", back_populates="store_departments")
-    department = relationship("Department", back_populates="store_departments")
-
+    store = relationship(
+        "Store",
+        back_populates="store_departments",
+        overlaps="departments,stores",
+    )
+    department = relationship(
+        "Department",
+        back_populates="store_departments",
+        overlaps="departments",
+    )

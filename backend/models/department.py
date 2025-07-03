@@ -13,11 +13,15 @@ class Department(Base):
         "StoreDepartment",
         back_populates="department",
         cascade="all, delete-orphan",
+        overlaps="departments",
     )
     stores = relationship(
         "Store",
         secondary="store_department",
         back_populates="departments",
+        overlaps= "store_departments",
     )
     inventories = relationship("Inventory", back_populates="department")
     forecasts = relationship("Forecast", back_populates="department")
+    weekly_sales = relationship("WeeklySales", back_populates="department")
+
