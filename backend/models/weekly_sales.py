@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, Date, ForeignKey
+from sqlalchemy import Column, Integer, Float, Date, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from db.session import Base
 
@@ -10,4 +10,7 @@ class WeeklySales(Base):
     department_id = Column(Integer, ForeignKey("departments.id"))
     week_date = Column(Date, nullable=False)
     weekly_sales = Column(Float, nullable=False)
+    is_holiday = Column(Boolean, nullable=False)
 
+    store = relationship("Store", back_populates="weekly_sales")
+    department = relationship("Department", back_populates="weekly_sales")

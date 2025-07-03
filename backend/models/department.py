@@ -1,10 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from db.session import Base
-from models.store_department import StoreDepartment
-from models.store import Store
-
-
 class Department(Base):
     __tablename__ = "departments"
 

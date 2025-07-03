@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -20,8 +20,10 @@ def attach_dept_to_store(
     data: StoreDepartmentCreate,
     db: Session = Depends(get_db),
 ):
-    # ensure data.store_id == store_id, then:
+    if data.store_id != store_id:
+        raise HTTPException(status_code=400, detail="store_id mismatch")
     return add_department_to_store(db, data)
+
 
 @router.get("/stores/{store_id}/departments/", response_model=List[DepartmentOut])
 def list_depts_in_store(store_id: int, db: Session = Depends(get_db)):

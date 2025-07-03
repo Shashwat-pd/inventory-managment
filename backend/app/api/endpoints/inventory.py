@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from db.session import SessionLocal
-from app.schemas.product import ProductCreate, ProductOut
+from app.schemas.product import ProductOut
 from app.crud import product as crud_product
 from typing import List
 
@@ -30,33 +29,34 @@ def read_one(product_id: int, db: Session = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=404, detail = "Product not found")
     return product
-@router.get("/{store_id}/{product_id}", response_model=InventoryOut)
+@router.get("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def read_inventory(
-    store_id: int, product_id: str, db: Session = Depends(get_db)
+    store_id: int, product_id: int,department_id:int, db: Session = Depends(get_db)
 ):
-    obj = crud.get_inventory(db, store_id, product_id)
+    obj = crud.get_inventory(db, store_id,department_id, product_id)
     if not obj:
         raise HTTPException(status_code=404, detail="Inventory not found")
     return obj
 
 
-@router.put("/{store_id}/{product_id}", response_model=InventoryOut)
+@router.put("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def update_inventory_route(
     store_id: int,
-    product_id: str,
+    product_id: int,
+    department_id: int,
     inv: InventoryCreate,
     db: Session = Depends(get_db),
 ):
-    updated = crud.update_inventory(db, store_id, product_id, inv.stock_level)
+    updated = crud.update_inventory(db, store_id,department_id, product_id, inv.stock_level)
     if not updated:
         raise HTTPException(status_code=404, detail="Inventory not found")
     return updated
 
-@router.delete("/{store_id}/{product_id}", response_model=InventoryOut)
+@router.delete("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def delete_inventory_route(
-    store_id: int, product_id: str, db: Session = Depends(get_db)
+    store_id: int, product_id: int, department_id:int, db: Session = Depends(get_db)
 ):
-    deleted = crud.delete_inventory(db, store_id, product_id)
+    deleted = crud.delete_inventory(db, store_id,department_id, product_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Inventory not found")
     return deleted

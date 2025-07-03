@@ -25,7 +25,7 @@ def list_products(
 
 @router.get("/{product_id}", response_model=ProductOut)
 def read_product(
-    product_id: str,
+    product_id: int,
     db: Session = Depends(get_db)
 ):
     obj = crud.get_product(db, product_id)
@@ -35,7 +35,7 @@ def read_product(
 
 @router.put("/{product_id}", response_model=ProductOut)
 def update_product_route(
-    product_id: str,
+    product_id: int,
     prod: ProductCreate,
     db: Session = Depends(get_db)
 ):
@@ -46,7 +46,7 @@ def update_product_route(
 
 @router.delete("/{product_id}", response_model=ProductOut)
 def delete_product_route(
-    product_id: str,
+    product_id: int,
     db: Session = Depends(get_db)
 ):
     obj = crud.delete_product(db, product_id)
