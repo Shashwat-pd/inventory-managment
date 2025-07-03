@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from db.session import Base
 
 class Inventory(Base):
-    __tablename__ = "inventory"
+    __tablename__ = "inventories"
 
     store_id = Column(
         Integer,

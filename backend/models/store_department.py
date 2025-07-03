@@ -5,7 +5,7 @@ from db.session import Base
 
 
 class StoreDepartment(Base):
-    __tablename__ = "store_department"
+    __tablename__ = "store_departments"
 
     store_id = Column(
         Integer,

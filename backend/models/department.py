@@ -17,7 +17,7 @@ class Department(Base):
     )
     stores = relationship(
         "Store",
-        secondary="store_department",
+        secondary="store_departments",
         back_populates="departments",
         overlaps= "store_departments",
     )
