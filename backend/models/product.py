@@ -9,7 +9,6 @@ class Product(Base):
     name = Column(String, index=True, nullable=False)
     description = Column(String, nullable=True)
     price = Column(Float, nullable=False)
-    quantity = Column(Integer, default=0)
 
     department_id = Column(Integer,ForeignKey("departments.id"))
 
