@@ -11,9 +11,7 @@ class Product(Base):
     price = Column(Float, nullable=False)
     quantity = Column(Integer, default=0)
 
-    store_id = Column(Integer,ForeignKey("stores.id"))
     department_id = Column(Integer,ForeignKey("departments.id"))
 
-    store = relationship ("Store", back_populates = "products")
     department = relationship("Department", back_populates= "products")
     inventories = relationship("Inventory", back_populates="product")

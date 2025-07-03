@@ -9,7 +9,6 @@ class Store(Base):
     name = Column(String, nullable = False)
     location = Column(String, nullable= True)
     size = Column(String, nullable=True)
-    products = relationship("Product", back_populates="store")
 
 
     store_departments = relationship(

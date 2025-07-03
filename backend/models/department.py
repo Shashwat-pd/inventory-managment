@@ -13,7 +13,7 @@ class Department(Base):
         "StoreDepartment",
         back_populates="department",
         cascade="all, delete-orphan",
-        overlaps="departments",
+        overlaps="stores",
     )
     stores = relationship(
         "Store",
