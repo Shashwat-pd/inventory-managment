@@ -1,16 +1,6 @@
-export interface BasicResponse {
-  Code: number;
-  Message: string;
-}
+import { IDepartment, IInventoryData, IProduct, IStoreData } from "./types";
 
-export interface IInventoryData {
-  name: string;
-  description: string;
-  price: number;
-  quantity: number;
-  id: number;
-}
-[];
-
-
-
+export type StoreResponse= IStoreData[];
+export type InventoryResponse = IInventoryData[];
+export type DepartmentResponse = IDepartment[];
+export type ProductResponse = IProduct[];

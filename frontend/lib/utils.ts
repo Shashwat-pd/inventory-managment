@@ -1,4 +1,4 @@
-import { BasicResponse } from "@/types";
+import { BasicResponse } from "@/types/types";
 import {
   BaseQueryFn,
   FetchArgs,

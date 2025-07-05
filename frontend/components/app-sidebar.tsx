@@ -53,7 +53,7 @@ const data = {
     },
     {
       title: "Stores",
-      url: "/stores",
+      url: "/store",
       icon: IconChartBar,
     },
     {

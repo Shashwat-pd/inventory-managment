@@ -1,5 +1,6 @@
 import { baseQueryWithReauth } from "@/lib/utils";
-import { IInventoryData } from "@/types";
+import { InventoryResponse } from "@/types";
+
 import { createApi } from "@reduxjs/toolkit/query/react";
 export const InventoryApi = createApi({
   reducerPath: "inventroyApi",
@@ -7,7 +8,7 @@ export const InventoryApi = createApi({
     baseQueryWithReauth(args, api, { ...extraOptions, baseUrl: `/external` }),
   tagTypes: ["inventory"],
   endpoints: (builder) => ({
-    getInventory: builder.query<IInventoryData, string>({
+    getInventory: builder.query<InventoryResponse, string>({
       query: () => `/api/inventory`,
     }),
     addInventory: builder.mutation({
@@ -18,7 +19,7 @@ export const InventoryApi = createApi({
       }),
       invalidatesTags: ["inventory"],
     }),
-    getIndividualInventory: builder.query<IInventoryData, string>({
+    getIndividualInventory: builder.query<InventoryResponse, string>({
       query: (id) => `/api/inventory/${id}`,
     }),
     updateInventory: builder.mutation({

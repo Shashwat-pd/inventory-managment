@@ -8,7 +8,7 @@ interface PageProps {
 
 const DescriptionPage = async ({ params }: PageProps) => {
   const { slug } = await params; // Await the entire params object
-  return <InventoryDescription id= {slug} />
+  return <InventoryDescription slug= {slug} />
 };
 
 export const dynamic = "force-dynamic";
