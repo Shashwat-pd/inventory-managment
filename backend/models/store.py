@@ -9,18 +9,19 @@ class Store(Base):
     name = Column(String, nullable = False)
     location = Column(String, nullable= True)
     size = Column(String, nullable=True)
-    products = relationship("Product", back_populates="store")
 
 
     store_departments = relationship(
         "StoreDepartment",
         back_populates="store",
         cascade="all, delete-orphan",
+        overlaps="departments",
     )
     departments = relationship(
         "Department",
-        secondary="store_department",
+        secondary="store_departments",
         back_populates="stores",
+        overlaps= "store_departments",
     )
     inventories = relationship("Inventory", back_populates="store")
     forecasts = relationship("Forecast", back_populates="store")

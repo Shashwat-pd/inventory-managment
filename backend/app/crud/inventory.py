@@ -24,7 +24,7 @@ def create_inventory(db: Session, inv: InventoryCreate):
     return obj
 
 def update_inventory(db: Session, store_id: int, department_id: int,product_id: int, stock_level: int):
-    obj = get_inventory(db, store_id, product_id)
+    obj = get_inventory(db, store_id, department_id, product_id)
     if not obj:
         return None
     obj.stock_level = stock_level
