@@ -13,6 +13,14 @@ def get_inventory(db: Session, store_id: int,department_id:int, product_id: int)
         .first()
     )
 
+def get_inventory_of_department(db: Session, store_id: int,department_id:int):
+    return( db.query(Inventory).filter(
+        Inventory.store_id == store_id,
+        Inventory.department_id == department_id,
+    ).all()
+           )
+
+
 def get_inventories(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Inventory).offset(skip).limit(limit).all()
 

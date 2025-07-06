@@ -29,6 +29,7 @@ def read_one(product_id: int, db: Session = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=404, detail = "Product not found")
     return product
+
 @router.get("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def read_inventory(
     store_id: int, product_id: int,department_id:int, db: Session = Depends(get_db)
@@ -37,6 +38,16 @@ def read_inventory(
     if not obj:
         raise HTTPException(status_code=404, detail="Inventory not found")
     return obj
+
+@router.get("/{store_id}/{department_id}", response_model=InventoryOut)
+def read_inventory_by_department(
+    store_id: int, department_id:int, db: Session = Depends(get_db)
+):
+    obj = crud.get_inventory_of_department(db, store_id,department_id)
+    if not obj:
+        raise HTTPException(status_code=404, detail="Inventory not found")
+    return obj
+
 
 
 @router.put("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)

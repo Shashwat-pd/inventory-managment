@@ -19,6 +19,7 @@ import models.inventory
 import models.forecast
 import models.store_department
 
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Inventory Management & Forecasting API")
