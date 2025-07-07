@@ -9,7 +9,7 @@ class Store(Base):
     name = Column(String, nullable = False)
     location = Column(String, nullable= True)
     size = Column(String, nullable=True)
-
+    type = Column(String, nullable=True)
 
     store_departments = relationship(
         "StoreDepartment",

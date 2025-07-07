@@ -14,3 +14,4 @@ def create(data: DepartmentCreate, db: Session = Depends(get_db)):
 def read_all(db: Session = Depends(get_db)):
     return crud.get_departments(db)
 
+
