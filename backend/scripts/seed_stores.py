@@ -32,7 +32,6 @@ LOCATIONS = [
 ]
 
 def seed_stores(db ) -> None:
-    """Read ``stores.csv`` and populate the ``stores`` table."""
 
     if not os.path.exists(DATA_FILE):
         print(f"stores.csv not found at {DATA_FILE}")
