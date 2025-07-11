@@ -39,7 +39,7 @@ def read_inventory(
         raise HTTPException(status_code=404, detail="Inventory not found")
     return obj
 
-@router.get("/{store_id}/{department_id}", response_model=InventoryOut)
+@router.get("/{store_id}/{department_id}", response_model=List[InventoryOut])
 def read_inventory_by_department(
     store_id: int, department_id:int, db: Session = Depends(get_db)
 ):
