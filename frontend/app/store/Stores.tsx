@@ -180,6 +180,7 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
             </div>
             <div>
               <CardTitle className="text-lg">{store.name}</CardTitle>
+              {/* to do this is only for development in production this is hidden  */}
               <CardDescription>Store ID: {store.id}</CardDescription>
             </div>
           </div>
@@ -218,7 +219,7 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
   );
 };
 
-const StoreLoadingSkeleton = () => (
+export const StoreLoadingSkeleton = () => (
   <Card>
     <CardHeader>
       <div className="flex items-center space-x-2">
