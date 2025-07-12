@@ -12,6 +12,15 @@ def get_inventory(db: Session, store_id: int,department_id:int, product_id: int)
         )
         .first()
     )
+def get_inventory_of_product(db: Session, product_id: int):
+    return (
+        db.query(Inventory)
+        .filter(
+            Inventory.product_id == product_id
+        )
+        .first()
+    )
+
 
 def get_inventory_of_department(db: Session, store_id: int,department_id:int):
     return( db.query(Inventory).filter(
