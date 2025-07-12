@@ -23,12 +23,12 @@ def list_inventories(
 ):
     return crud.get_inventories(db, skip, limit)
 
-@router.get("/{product_id}", response_model=ProductOut)
+@router.get("/{product_id}", response_model=InventoryOut)
 def read_one(product_id: int, db: Session = Depends(get_db)):
-    product = crud_product.get_product(db, product_id)
-    if not product:
+    inventory = crud.get_inventory_of_product(db, product_id)
+    if not inventory:
         raise HTTPException(status_code=404, detail = "Product not found")
-    return product
+    return inventory
 
 @router.get("/{store_id}/{department_id}/{product_id}", response_model=InventoryOut)
 def read_inventory(
