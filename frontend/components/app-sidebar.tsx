@@ -61,6 +61,11 @@ const data = {
       url: "/departments",
       icon: IconFolder,
     },
+    {
+      title: "Products",
+      url: "/products",
+      icon: IconFolder,
+    },
     // {
     //   title: "Team",
     //   url: "#",
