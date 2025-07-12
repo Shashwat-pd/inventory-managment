@@ -4,6 +4,8 @@ class StoreBase(BaseModel):
     name: str
     location: str | None = None
     size: str | None = None
+    type: str | None = None
+
 
 class StoreCreate(StoreBase):
     pass
