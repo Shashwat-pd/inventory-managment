@@ -31,6 +31,14 @@ export interface IProduct {
   description: string;
 }
 
+export interface StoreInventory {
+  store_id: number;
+  department_id: number;
+  product_id: number;
+  stock_level: number;
+  last_updated: string;
+}
+
 export interface InventoryLevel {
   store_id: number;
   department_id: number;

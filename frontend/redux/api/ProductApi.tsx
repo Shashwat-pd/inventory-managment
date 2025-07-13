@@ -32,7 +32,7 @@ export const ProductApi = createApi({
         method: "DELETE",
       }),
     }),
-    getProductDetail: builder.query<IProduct, string>({
+    getProductDetail: builder.query<IProduct, number>({
       query: (id) => `/api/products/${id}`,
     }),
   }),

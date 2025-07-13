@@ -129,7 +129,7 @@ const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
   );
 };
 
-const InventoryDescription = ({ slug }: Props) => {
+const InventoryDescription = ({ slug }: Props) => {    
   const [showInventory, setShowInventory] = useState(false);
   const [storeId, setStoreId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);

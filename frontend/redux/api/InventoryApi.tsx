@@ -1,4 +1,5 @@
 import { baseQueryWithReauth } from "@/lib/utils";
+import { InventoryDepartment } from "@/types";
 import { InventoryLevel } from "@/types/types";
 
 import { createApi } from "@reduxjs/toolkit/query/react";
@@ -15,7 +16,14 @@ export const InventoryApi = createApi({
       query: ({ store_id, department_id, product_id }) =>
         `/api/inventory/${store_id}/${department_id}/${product_id}`,
     }),
-     
+    getStoreInventory: builder.query<
+      InventoryDepartment,
+      { store_id: number; department_id: number }
+    >({
+      query: ({ store_id, department_id }) =>
+        `/api/inventory/${store_id}/${department_id}`,
+    }),
+
     putInventory: builder.mutation({
       query: ({ store_id, department_id, product_id, data }) => ({
         url: `/api/inventory/${store_id}/${department_id}/${product_id}`,
@@ -26,4 +34,8 @@ export const InventoryApi = createApi({
   }),
 });
 
-export const { useGetInventoryQuery, usePutInventoryMutation } = InventoryApi;
+export const {
+  useGetInventoryQuery,
+  usePutInventoryMutation,
+  useGetStoreInventoryQuery,
+} = InventoryApi;
