@@ -1,11 +1,68 @@
-import React from 'react'
+"use client";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useGetDepartmentsQuery } from "@/redux/api/DepartmentsApi";
+import { IconHome2 } from "@tabler/icons-react";
+import { Home } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
-const page = () => {
+const StoreDepartments = () => {
+  const {
+    data: Departments,
+    isError: DepartmentError,
+    isLoading: DepartmentLoading,
+  } = useGetDepartmentsQuery("");
+
+  if (DepartmentLoading) {
+    return <div>loading</div>;
+  }
+  if (DepartmentError) {
+    return <div>error loading data</div>;
+  }
+
   return (
-    <div>
-      this is dead end 
-    </div>
-  )
-}
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader title={"Departments"} />
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Departments?.map((department) => (
+              <Card
+                className="hover:shadow-lg transition-shadow duration-200"
+                key={department.id}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Home className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base font-medium">
+                          {department.name}
+                        </CardTitle>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+};
 
-export default page
+export default StoreDepartments;

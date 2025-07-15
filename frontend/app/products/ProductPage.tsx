@@ -15,8 +15,9 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { DialogTitle } from "@radix-ui/react-dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { BookCheck } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Zod schema for product validation
 const productSchema = z.object({
@@ -93,6 +94,7 @@ const ProductsPage: React.FC = () => {
   useEffect(() => {
     if (productDetailData && showEditForm) {
       resetEditForm({
+        name: productDetailData.name,
         price: productDetailData.price,
         department_id: productDetailData.department_id,
         description: productDetailData.description,
@@ -149,17 +151,26 @@ const ProductsPage: React.FC = () => {
     setShowEditForm(true);
     setShowProductDetail(false);
   };
-
-  const handleInventoryClick = (data: Product) => {
-    router.push(`/inventory/${data.id}`);
+  // Handle dialog close events
+  const handleAddFormClose = (open: boolean) => {
+    setShowAddForm(open);
+    if (!open) {
+      resetAddForm();
+    }
   };
 
-  // Close all modals
-  const closeAllModals = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-    setShowProductDetail(false);
-    setSelectedProductId(null);
+  const handleEditFormClose = (open: boolean) => {
+    setShowEditForm(open);
+    if (!open) {
+      resetEditForm();
+    }
+  };
+
+  const handleProductDetailClose = (open: boolean) => {
+    setShowProductDetail(open);
+    if (!open) {
+      setSelectedProductId(null);
+    }
   };
 
   if (productsLoading) {
@@ -182,96 +193,90 @@ const ProductsPage: React.FC = () => {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title={"Products"} />
-        <div className="container mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Products</h1>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              Add New Product
-            </button>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <BookCheck className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-base font-medium ">Product Management</h1>
+              <p className=" font-small">Manage your products</p>
+            </div>
           </div>
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {productsData?.map((product: Product) => (
-              <div
+              <Card
+                className="hover:shadow-lg transition-shadow duration-200"
                 key={product.id}
-                className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow border border-gray-200"
+                onClick={() => handleProductClick(product.id)}
               >
-                <h3
-                  className="text-xl font-semibold mb-2"
-                  onClick={() => handleProductClick(product.id)}
-                >
-                  {product.name}
-                </h3>
-                <p className="text-2xl font-bold text-green-600 mb-2">
-                  ${product.price}
-                </p>
-                <p className="text-gray-600 text-sm line-clamp-3">
-                  {product.description}
-                </p>
-                <div>
-                  <button onClick={() => handleInventoryClick(product)}>
-                    {" "}
-                    See Inventory
-                  </button>
-                </div>
-              </div>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-medium ">
+                    {product.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xl font-bold text-green-600 mb-2">
+                    ${product.price}
+                  </p>
+                  <p className=" text-base line-clamp-3">
+                    {product.description}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
 
           {/* Product Detail Modal */}
-          {showProductDetail && productDetailData && (
-            <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg max-w-md w-full p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h2 className="text-2xl font-bold">
-                    {productDetailData.name}
-                  </h2>
-                  <button
-                    onClick={closeAllModals}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    ✕
-                  </button>
-                </div>
+          <Dialog
+            open={showProductDetail}
+            onOpenChange={handleProductDetailClose}
+          >
+            <DialogContent className="max-w-md">
+              <DialogTitle className="text-2xl font-bold">
+                {productDetailData?.name}
+              </DialogTitle>
 
-                <div className="mb-4">
-                  <p className="text-3xl font-bold text-green-600 mb-2">
-                    ${productDetailData.price}
-                  </p>
-                  <p className="text-gray-700 mb-4">
-                    {productDetailData.description}
-                  </p>
-                </div>
+              {productDetailData && (
+                <>
+                  <div className="mb-4">
+                    <p className="text-3xl font-bold text-green-600 mb-2">
+                      ${productDetailData.price}
+                    </p>
+                    <p className="text-gray-700 mb-4">
+                      {productDetailData.description}
+                    </p>
+                  </div>
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleEditClick}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={onDeleteProduct}
-                    disabled={isDeleting}
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleEditClick}
+                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={onDeleteProduct}
+                      disabled={isDeleting}
+                      className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
 
           {/* Add Product Modal */}
-          {/* {showAddForm && ( */}
+          <Dialog open={showAddForm} onOpenChange={handleAddFormClose}>
+            <DialogContent className="max-w-md">
+              <DialogTitle className="text-2xl font-bold">
+                Add New Product
+              </DialogTitle>
 
-          <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-            <DialogContent>
-              <DialogTitle>Add New Product</DialogTitle>
               <form
                 onSubmit={handleAddSubmit(onAddProduct)}
                 className="space-y-4"
@@ -397,25 +402,17 @@ const ProductsPage: React.FC = () => {
                   </button>
                 </div>
               </form>
-              {/* </div> */}
-              {/* </div> */}
             </DialogContent>
           </Dialog>
 
           {/* Edit Product Modal */}
-          {showEditForm && productDetailData && (
-            <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg max-w-md w-full p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold">Edit Product</h2>
-                  <button
-                    onClick={() => setShowEditForm(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    ✕
-                  </button>
-                </div>
+          <Dialog open={showEditForm} onOpenChange={handleEditFormClose}>
+            <DialogContent className="max-w-md">
+              <DialogTitle className="text-2xl font-bold">
+                Edit Product
+              </DialogTitle>
 
+              {productDetailData && (
                 <form
                   onSubmit={handleEditSubmit(onEditProduct)}
                   className="space-y-4"
@@ -541,9 +538,9 @@ const ProductsPage: React.FC = () => {
                     </button>
                   </div>
                 </form>
-              </div>
-            </div>
-          )}
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </SidebarInset>
     </SidebarProvider>

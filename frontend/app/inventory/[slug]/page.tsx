@@ -1,5 +1,5 @@
 import React from "react";
-import InventoryDescription from "./InventoryDescription";
+// import InventoryDescription from "./InventoryDescription";
 
 interface PageProps {
   params: Promise<{ slug: string }>; // params is now a Promise
@@ -7,7 +7,8 @@ interface PageProps {
 
 const DescriptionPage = async ({ params }: PageProps) => {
   const { slug } = await params; // Await the entire params object
-  return <InventoryDescription slug={slug} />;
+  // return <InventoryDescription slug={slug} />;
+  return <div>awrf</div>
 };
 
 export const dynamic = "force-dynamic";

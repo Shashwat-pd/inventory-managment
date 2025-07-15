@@ -48,6 +48,10 @@ import {
   usePutStoreMutation,
 } from "@/redux/api/StoreApi";
 import { IStoreData } from "@/types/types";
+import Link from "next/link";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
 
 // Zod validation schema
 const storeSchema = z.object({
@@ -63,8 +67,8 @@ interface StoreFormProps {
   onClose: () => void;
 }
 interface StoreCardProps {
-  store: IStoreData;    // Comes from stores array item
-  onEdit: (store: IStoreData) => void;  // Comes from handleEdit function
+  store: IStoreData; // Comes from stores array item
+  onEdit: (store: IStoreData) => void; // Comes from handleEdit function
 }
 
 const StoreForm: React.FC<StoreFormProps> = ({ store, onClose }) => {
@@ -179,9 +183,9 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
               <Store className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <CardTitle className="text-lg">{store.name}</CardTitle>
+              <CardTitle className="text-base font-medium ">{store.name}</CardTitle>
               {/* to do this is only for development in production this is hidden  */}
-              <CardDescription>Store ID: {store.id}</CardDescription>
+              {/* <CardDescription>Store ID: {store.id}</CardDescription> */}
             </div>
           </div>
           <DropdownMenu>
@@ -204,14 +208,24 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <MapPin className="h-4 w-4 text-gray-500" />
-            <span className="text-sm text-gray-600">{store.location}</span>
+        <div className="flex flex-col space-y-3">
+          {/* Info block */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <MapPin className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-600">{store.location}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Ruler className="h-4 w-4 text-gray-500" />
+              <Badge variant="secondary">{store.size}</Badge>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Ruler className="h-4 w-4 text-gray-500" />
-            <Badge variant="secondary">{store.size}</Badge>
+
+          {/* Button aligned right */}
+          <div className="flex justify-end pt-2">
+            <Link href={`/store/${store.id}`}>
+              <Button>See Inventory</Button>
+            </Link>
           </div>
         </div>
       </CardContent>
@@ -261,7 +275,7 @@ const StorePage: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold  mb-2">
             Error loading stores
           </h2>
           <p className="text-gray-600">
@@ -273,123 +287,141 @@ const StorePage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-blue-100 rounded-lg">
-            <Building2 className="h-8 w-8 text-blue-600" />
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader title={"Stores"} />
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Building2 className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-base font-medium ">
+                  Store Management
+                </h1>
+                <p className=" font-small">
+                  Manage your inventory stores and locations
+                </p>
+              </div>
+            </div>
+
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Store
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Store</DialogTitle>
+                </DialogHeader>
+                <StoreForm onClose={() => setIsCreateDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Store Management
-            </h1>
-            <p className="text-gray-600">
-              Manage your inventory stores and locations
-            </p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Store className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="text-base font-medium ">
+                      Total Stores
+                    </p>
+                    <p className=" font-bold ">
+                      {stores?.length || 0}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-base font-medium ">
+                      Locations
+                    </p>
+                    <p className="font-bold ">
+                      {stores ? new Set(stores.map((s) => s.location)).size : 0}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Package className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="text-base font-medium ">Active</p>
+                    <p className="font-bold ">
+                      {stores?.length || 0}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Store Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, index) => (
+                <StoreLoadingSkeleton key={index} />
+              ))
+            ) : stores && stores.length > 0 ? (
+              stores.map((store) => (
+                <StoreCard key={store.id} store={store} onEdit={handleEdit} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <Store className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  No stores found
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Get started by creating your first store
+                </p>
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Store
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Edit Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Store</DialogTitle>
+              </DialogHeader>
+              {selectedStore && (
+                <StoreForm store={selectedStore} onClose={handleCloseEdit} />
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
-
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Store
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Store</DialogTitle>
-            </DialogHeader>
-            <StoreForm onClose={() => setIsCreateDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Store className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Stores
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stores?.length || 0}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <MapPin className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Locations</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stores ? new Set(stores.map((s) => s.location)).size : 0}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Package className="h-8 w-8 text-purple-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stores?.length || 0}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Store Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <StoreLoadingSkeleton key={index} />
-          ))
-        ) : stores && stores.length > 0 ? (
-          stores.map((store) => (
-            <StoreCard key={store.id} store={store} onEdit={handleEdit} />
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12">
-            <Store className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              No stores found
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Get started by creating your first store
-            </p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Store
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Store</DialogTitle>
-          </DialogHeader>
-          {selectedStore && (
-            <StoreForm store={selectedStore} onClose={handleCloseEdit} />
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 

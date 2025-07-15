@@ -25,11 +25,11 @@ const DepartmentProducts = async ({ params }: PageProps) => {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold mb-6">Department Products</h1>
+    <div >
+      {/* <h1 className="text-3xl font-bold mb-6">Department Products</h1>
       <p className="text-gray-600 mb-4">
         Store ID: {store_id} | Department ID: {department_id}
-      </p>
+      </p> */}
       <DepartmentProduct storeId={store_id} departmentId={department_id} />
     </div>
   );
