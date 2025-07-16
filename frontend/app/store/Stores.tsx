@@ -52,6 +52,8 @@ import Link from "next/link";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
+import Loader from "@/components/ui/Loader";
+import ErrorCard from "@/components/ui/Error";
 
 // Zod validation schema
 const storeSchema = z.object({
@@ -182,11 +184,9 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
             <div className="p-2 bg-blue-100 rounded-lg">
               <Store className="h-5 w-5 text-blue-600" />
             </div>
-            <div>
-              <CardTitle className="text-base font-medium ">{store.name}</CardTitle>
-              {/* to do this is only for development in production this is hidden  */}
-              {/* <CardDescription>Store ID: {store.id}</CardDescription> */}
-            </div>
+            <CardTitle className="text-base font-medium ">
+              {store.name}
+            </CardTitle>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -208,7 +208,7 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col space-y-3">
+        <div className="flex flex-col ">
           {/* Info block */}
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
@@ -222,7 +222,7 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
           </div>
 
           {/* Button aligned right */}
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end ">
             <Link href={`/store/${store.id}`}>
               <Button>See Inventory</Button>
             </Link>
@@ -233,25 +233,6 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
   );
 };
 
-export const StoreLoadingSkeleton = () => (
-  <Card>
-    <CardHeader>
-      <div className="flex items-center space-x-2">
-        <Skeleton className="h-10 w-10 rounded-lg" />
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-3 w-16" />
-        </div>
-      </div>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-6 w-16" />
-      </div>
-    </CardContent>
-  </Card>
-);
 
 const StorePage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -272,17 +253,9 @@ const StorePage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold  mb-2">
-            Error loading stores
-          </h2>
-          <p className="text-gray-600">
-            Unable to fetch store data. Please try again.
-          </p>
-        </div>
-      </div>
+      <div className="w-full justify-center-safe">
+     <ErrorCard/>
+     </div>
     );
   }
 
@@ -306,9 +279,7 @@ const StorePage: React.FC = () => {
                 <Building2 className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-base font-medium ">
-                  Store Management
-                </h1>
+                <h1 className="text-base font-medium ">Store Management</h1>
                 <p className=" font-small">
                   Manage your inventory stores and locations
                 </p>
@@ -341,12 +312,8 @@ const StorePage: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <Store className="h-5 w-5 text-blue-600" />
                   <div>
-                    <p className="text-base font-medium ">
-                      Total Stores
-                    </p>
-                    <p className=" font-bold ">
-                      {stores?.length || 0}
-                    </p>
+                    <p className="text-base font-medium ">Total Stores</p>
+                    <p className=" font-bold ">{stores?.length || 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -356,9 +323,7 @@ const StorePage: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-5 w-5 text-green-600" />
                   <div>
-                    <p className="text-base font-medium ">
-                      Locations
-                    </p>
+                    <p className="text-base font-medium ">Locations</p>
                     <p className="font-bold ">
                       {stores ? new Set(stores.map((s) => s.location)).size : 0}
                     </p>
@@ -372,9 +337,7 @@ const StorePage: React.FC = () => {
                   <Package className="h-5 w-5 text-purple-600" />
                   <div>
                     <p className="text-base font-medium ">Active</p>
-                    <p className="font-bold ">
-                      {stores?.length || 0}
-                    </p>
+                    <p className="font-bold ">{stores?.length || 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -385,7 +348,7 @@ const StorePage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, index) => (
-                <StoreLoadingSkeleton key={index} />
+                <Loader key={index}/>
               ))
             ) : stores && stores.length > 0 ? (
               stores.map((store) => (

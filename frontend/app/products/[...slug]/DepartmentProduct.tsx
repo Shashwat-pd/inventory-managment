@@ -28,6 +28,8 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import ErrorCard from "@/components/ui/Error";
+import Loader from "@/components/ui/Loader";
 
 const inventoryUpdateSchema = z.object({
   store_id: z.number().min(0, "Store id is required"),
@@ -58,17 +60,13 @@ const DepartmentProduct = ({
 
   if (inventoryLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Loading products...</div>
-      </div>
+     <Loader/>
     );
   }
 
   if (inventoryError) {
     return (
-      <div className="text-red-600 text-center">
-        Error loading inventory data
-      </div>
+     <ErrorCard/>
     );
   }
 

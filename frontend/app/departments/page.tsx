@@ -2,11 +2,12 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import ErrorCard from "@/components/ui/Error";
+import Loader from "@/components/ui/Loader";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useGetDepartmentsQuery } from "@/redux/api/DepartmentsApi";
-import { IconHome2 } from "@tabler/icons-react";
 import { Home } from "lucide-react";
-import Link from "next/link";
+
 import React from "react";
 
 const StoreDepartments = () => {
@@ -17,10 +18,10 @@ const StoreDepartments = () => {
   } = useGetDepartmentsQuery("");
 
   if (DepartmentLoading) {
-    return <div>loading</div>;
+    return <div><Loader/></div>;
   }
   if (DepartmentError) {
-    return <div>error loading data</div>;
+    return <div><ErrorCard/></div>;
   }
 
   return (
@@ -35,8 +36,7 @@ const StoreDepartments = () => {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title={"Departments"} />
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 md:grid-cols-3  lg:grid-cols-4">
             {Departments?.map((department) => (
               <Card
                 className="hover:shadow-lg transition-shadow duration-200"
@@ -59,7 +59,7 @@ const StoreDepartments = () => {
               </Card>
             ))}
           </div>
-        </div>
+        
       </SidebarInset>
     </SidebarProvider>
   );
