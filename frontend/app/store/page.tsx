@@ -1,12 +1,12 @@
-import React from 'react'
-import StorePage from './Stores'
+import React from "react";
+import StorePage from "./Stores";
 
-const page = () => {
+const StorePages = () => {
   return (
     <div>
-      <StorePage/>
+      <StorePage />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default StorePages;

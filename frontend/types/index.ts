@@ -1,6 +1,13 @@
-import { IDepartment, IInventoryData, IProduct, IStoreData } from "./types";
+import {
+  IDepartment,
+  IInventoryData,
+  IProduct,
+  IStoreData,
+  StoreInventory,
+} from "./types";
 
-export type StoreResponse= IStoreData[];
+export type StoreResponse = IStoreData[];
 export type InventoryResponse = IInventoryData[];
 export type DepartmentResponse = IDepartment[];
 export type ProductResponse = IProduct[];
+export type InventoryDepartment = StoreInventory[];
