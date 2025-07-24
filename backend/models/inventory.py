@@ -4,6 +4,7 @@ from db.session import Base
 
 class Inventory(Base):
     __tablename__ = "inventories"
+    __table_args__ = {'extend_existing': True}
 
     store_id = Column(
         Integer,

@@ -4,6 +4,7 @@ from db.session import Base
 
 class WeeklySales(Base):
     __tablename__ = "weekly_sales"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     store_id = Column(Integer, ForeignKey("stores.id"))

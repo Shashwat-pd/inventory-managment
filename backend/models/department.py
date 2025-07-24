@@ -3,8 +3,9 @@ from sqlalchemy.orm import relationship
 from db.session import Base
 class Department(Base):
     __tablename__ = "departments"
+    __table_args__ = {'extend_existing': True}
 
-    id = Column(Integer, primary_key=True, index = True)
+    id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
 
     products = relationship("Product", back_populates="department")

@@ -4,8 +4,9 @@ from db.session import Base
 
 class Store(Base):
     __tablename__ = "stores"
+    __table_args__ = {'extend_existing': True}
 
-    id = Column(Integer, primary_key = True, index = True)
+    id = Column(Integer, primary_key = True)
     name = Column(String, nullable = False)
     location = Column(String, nullable= True)
     size = Column(String, nullable=True)

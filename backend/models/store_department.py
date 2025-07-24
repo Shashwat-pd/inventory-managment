@@ -6,6 +6,7 @@ from db.session import Base
 
 class StoreDepartment(Base):
     __tablename__ = "store_departments"
+    __table_args__ = {'extend_existing': True}
 
     store_id = Column(
         Integer,
