@@ -3,6 +3,7 @@ import {
   IInventoryData,
   IProduct,
   IStoreData,
+  IWeeklySales,
   StoreInventory,
 } from "./types";
 
@@ -11,3 +12,4 @@ export type InventoryResponse = IInventoryData[];
 export type DepartmentResponse = IDepartment[];
 export type ProductResponse = IProduct[];
 export type InventoryDepartment = StoreInventory[];
+export type WeeklySalesList = IWeeklySales[];
