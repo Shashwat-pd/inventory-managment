@@ -1,5 +1,6 @@
 import {
   IDepartment,
+  IForeCastSales,
   IInventoryData,
   IProduct,
   IStoreData,
@@ -13,3 +14,4 @@ export type DepartmentResponse = IDepartment[];
 export type ProductResponse = IProduct[];
 export type InventoryDepartment = StoreInventory[];
 export type WeeklySalesList = IWeeklySales[];
+export type SalesForeCast = IForeCastSales[];

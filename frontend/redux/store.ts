@@ -4,6 +4,8 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { StoreApi } from "./api/StoreApi";
 import { DepartmentApi } from "./api/DepartmentsApi";
 import { ProductApi } from "./api/ProductApi";
+import { WeeklySalesApi } from "./api/WeeklySalesApi";
+import { ForeCastApi } from "./api/ForeCastApi";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +13,8 @@ export const store = configureStore({
     [StoreApi.reducerPath]: StoreApi.reducer,
     [DepartmentApi.reducerPath]: DepartmentApi.reducer,
     [ProductApi.reducerPath]: ProductApi.reducer,
+    [WeeklySalesApi.reducerPath]: WeeklySalesApi.reducer,
+    [ForeCastApi.reducerPath]: ForeCastApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -18,6 +22,8 @@ export const store = configureStore({
       StoreApi.middleware,
       DepartmentApi.middleware,
       ProductApi.middleware,
+      WeeklySalesApi.middleware,
+      ForeCastApi.middleware
     ),
 });
 

@@ -30,7 +30,7 @@ export const WeeklySalesApi = createApi({
 
     getWeeklySales: builder.query<
       IWeeklySales,
-      { store_id: string; department_id: number; week_date: string }
+      { store_id: number; department_id: number; week_date: string }
     >({
       query: ({ store_id, department_id, week_date }) =>
         `/api/weekly_sales/${store_id}/${department_id}/${week_date}`,

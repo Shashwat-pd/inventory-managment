@@ -26,7 +26,7 @@ export const DepartmentApi = createApi({
         method: "PUT",
         body: data,
       }),
-      invalidatesTags : ["department"]
+      invalidatesTags : ["department"]   
     }),
     deleteDepartments: builder.mutation({
       query: (id) => ({
@@ -43,5 +43,4 @@ export const {
     useDeleteDepartmentsMutation,
     usePostDepartmentsMutation,
     usePutDepartmentsMutation
-
 } = DepartmentApi

@@ -54,3 +54,12 @@ export interface IWeeklySales {
   weekly_sales: number;
   is_holiday: boolean;
 }
+
+export interface IForeCastSales {
+  store_id: number;
+  department_id: number;
+  week_date: string;
+  predicted_sales: number;
+  upper_ci: null;
+  lower_ci: null;
+}
