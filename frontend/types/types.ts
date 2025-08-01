@@ -60,6 +60,4 @@ export interface IForeCastSales {
   department_id: number;
   week_date: string;
   predicted_sales: number;
-  upper_ci: null;
-  lower_ci: null;
 }

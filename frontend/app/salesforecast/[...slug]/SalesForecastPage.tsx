@@ -1,31 +1,21 @@
 "use client"
-import { useGetForeCastQuery } from "@/redux/api/ForeCastApi";
-import { useGetWeeklySalesQuery } from "@/redux/api/WeeklySalesApi";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Calendar, TrendingUp, BarChart3 } from 'lucide-react';
+import { Calendar, TrendingUp, BarChart3, AlertCircle, RefreshCw } from 'lucide-react';
+import { SalesForeCast, WeeklySalesList } from "@/types";
+import { useLazyGetForeCastListQuery } from "@/redux/api/ForeCastApi";
+import { useLazyGetWeeklySalesListQuery } from "@/redux/api/WeeklySalesApi";
 
-// Your existing interfaces
-interface IWeeklySales {
-  store_id: number;
-  department_id: number;
-  week_date: string;
-  weekly_sales: number;
-  is_holiday: boolean;
-}
-
-interface IForeCastSales {
-  store_id: number;
-  department_id: number;
-  week_date: string;
-  predicted_sales: number;
-  upper_ci: null;
-  lower_ci: null;
-}
-
-interface SalesForeCast {
+interface SalesForeCasts {
   storeId: number;
   departmentId: number;
+}
+
+interface ChartDataPoint {
+  date: string;
+  forecast: number;
+  actualSales: number;
+  isHoliday: boolean;
 }
 
 // Utility function to format date as YYYY-MM-DD
@@ -46,48 +36,150 @@ const generateWeekDates = (startDate: Date, numWeeks: number): string[] => {
   return dates.reverse(); // Return in chronological order
 };
 
-const SalesForecastPage = ({ storeId, departmentId }: SalesForeCast) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<number>(4); // Default to 1 month (4 weeks)
-  
-  // Starting date: 2012-10-26
+const BATCH_SIZE = 1000;
+
+const SalesForecastPage = ({ storeId, departmentId }: SalesForeCasts) => {
+  const [selectedPeriod, setSelectedPeriod] = useState<number>(4);
   const startDate = new Date('2012-10-26');
+  const [forecastData, setForecastData] = useState<SalesForeCast>([]);
+  const [salesData, setSalesData] = useState<WeeklySalesList>([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Generate week dates based on selected period
-  const weekDates = useMemo(() => {
-    return generateWeekDates(startDate, selectedPeriod);
-  }, [selectedPeriod]);
+  const [fetchForecast, { 
+    isLoading: isForecastLoading, 
+    error: forecastError 
+  }] = useLazyGetForeCastListQuery();
+  
+  const [fetchSales, { 
+    isLoading: isSalesLoading, 
+    error: salesError 
+  }] = useLazyGetWeeklySalesListQuery();
+  
+  const weekDates = useMemo(() => (
+    generateWeekDates(startDate, selectedPeriod)
+  ), [selectedPeriod]);
 
-  // Fetch forecast data for all weeks (call hooks at top level)
-  const forecastQueries = weekDates.map(weekDate => 
-    useGetForeCastQuery({
-      store_id: storeId,
-      department_id: departmentId,
-      week_date: weekDate,
-    })
-  );
+  const fetchAllData = async () => {
+    try {
+      setIsLoadingData(true);
+      setError(null);
+      
+      // Reset data on new fetch
+      setForecastData([]);
+      setSalesData([]);
 
-  // Fetch weekly sales data for all weeks
-  const salesQueries = weekDates.map(weekDate => 
-    useGetWeeklySalesQuery({
-      store_id: storeId,
-      department_id: departmentId,
-      week_date: weekDate,
-    })
-  );
+      // Fetch forecast data in batches
+      let forecastSkip = 0;
+      let hasMoreForecast = true;
+      const allForecastData: SalesForeCast = [];
+      
+      while (hasMoreForecast) {
+        try {
+          const { data: forecastBatch, error: batchForecastError } = await fetchForecast({ 
+            limit: BATCH_SIZE, 
+            skip: forecastSkip 
+          });
+          
+          if (batchForecastError) {
+            throw new Error('Failed to fetch forecast data');
+          }
+          
+          if (!forecastBatch || forecastBatch.length === 0) {
+            hasMoreForecast = false;
+            break;
+          }
+          
+          allForecastData.push(...forecastBatch);
+          forecastSkip += BATCH_SIZE;
+          hasMoreForecast = forecastBatch.length === BATCH_SIZE;
+        } catch (err) {
+          console.error('Error fetching forecast batch:', err);
+          throw new Error('Failed to fetch forecast data');
+        }
+      }
 
-  // Combine the data
-  const salesData = weekDates.map((weekDate, index) => ({
-    week_date: weekDate,
-    forecast: forecastQueries[index]?.data?.predicted_sales || 0,
-    actual_sales: salesQueries[index]?.data?.weekly_sales || 0,
-    is_holiday: salesQueries[index]?.data?.is_holiday || false,
-    loading: forecastQueries[index]?.isLoading || salesQueries[index]?.isLoading,
-    error: forecastQueries[index]?.isError || salesQueries[index]?.isError,
-  }));
+      // Fetch sales data in batches
+      let salesSkip = 0;
+      let hasMoreSales = true;
+      const allSalesData: WeeklySalesList = [];
+      
+      while (hasMoreSales) {
+        try {
+          const { data: salesBatch, error: batchSalesError } = await fetchSales({ 
+            limit: BATCH_SIZE, 
+            skip: salesSkip 
+          });
+          
+          if (batchSalesError) {
+            throw new Error('Failed to fetch sales data');
+          }
+          
+          if (!salesBatch || salesBatch.length === 0) {
+            hasMoreSales = false;
+            break;
+          }
+          
+          allSalesData.push(...salesBatch);
+          salesSkip += BATCH_SIZE;
+          hasMoreSales = salesBatch.length === BATCH_SIZE;
+        } catch (err) {
+          console.error('Error fetching sales batch:', err);
+          throw new Error('Failed to fetch sales data');
+        }
+      }
 
-  // Check if any data is still loading or has errors
-  const isLoading = salesData.some(data => data.loading);
-  const hasError = salesData.some(data => data.error);
+      // Set all data at once to avoid multiple re-renders
+      setForecastData(allForecastData);
+      setSalesData(allSalesData);
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      console.error('Error fetching data:', err);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, [selectedPeriod, storeId, departmentId]);
+
+  const filteredData = useMemo(() => {
+    const result: ChartDataPoint[] = [];
+    
+    for (const weekDate of weekDates) {
+      const forecast = forecastData.find(
+        f => f.store_id === storeId && 
+             f.department_id === departmentId && 
+             f.week_date === weekDate
+      );
+      
+      const sales = salesData.find(
+        s => s.store_id === storeId && 
+             s.department_id === departmentId && 
+             s.week_date === weekDate
+      );
+      
+      result.push({
+        date: weekDate,
+        forecast: forecast?.predicted_sales || 0,
+        actualSales: sales?.weekly_sales || 0,
+        isHoliday: sales?.is_holiday || false,
+      });
+    }
+    
+    return result;
+  }, [forecastData, salesData, weekDates, storeId, departmentId]);
+
+  // Combined loading state
+  const isLoading = isLoadingData || isForecastLoading || isSalesLoading;
+  
+  // Combined error handling
+  const combinedError = error || 
+    (forecastError && 'error' in forecastError ? forecastError.error : null) ||
+    (salesError && 'error' in salesError ? salesError.error : null);
 
   // Time period options
   const periodOptions = [
@@ -98,14 +190,6 @@ const SalesForecastPage = ({ storeId, departmentId }: SalesForeCast) => {
     { value: 52, label: '1 Year', weeks: 52 },
   ];
 
-  // Format chart data
-  const chartData = salesData.map(item => ({
-    date: item.week_date,
-    'Actual Sales': item.actual_sales,
-    'Forecast': item.forecast,
-    'Holiday': item.is_holiday,
-  }));
-
   // Custom tooltip for the chart
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -114,12 +198,12 @@ const SalesForecastPage = ({ storeId, departmentId }: SalesForeCast) => {
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-800">{`Week: ${label}`}</p>
           <p className="text-blue-600">
-            {`Actual Sales: $${payload[0]?.value?.toLocaleString() || 0}`}
+            {`Actual Sales: $${payload.find((p: any) => p.dataKey === 'actualSales')?.value?.toLocaleString() || 0}`}
           </p>
           <p className="text-green-600">
-            {`Forecast: $${payload[1]?.value?.toLocaleString() || 0}`}
+            {`Forecast: $${payload.find((p: any) => p.dataKey === 'forecast')?.value?.toLocaleString() || 0}`}
           </p>
-          {data.Holiday && (
+          {data.isHoliday && (
             <p className="text-red-500 text-xs mt-1">🎉 Holiday Week</p>
           )}
         </div>
@@ -128,26 +212,35 @@ const SalesForecastPage = ({ storeId, departmentId }: SalesForeCast) => {
     return null;
   };
 
-  if (hasError) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="text-red-500 text-xl mb-2">⚠️</div>
-          <p className="text-red-600 font-semibold">Error loading sales data</p>
-          <p className="text-gray-600 text-sm">Please try again later</p>
-        </div>
-      </div>
-    );
-  }
+  // Error component
+  const ErrorDisplay = () => (
+    <div className="flex flex-col items-center justify-center h-64 bg-red-50 rounded-lg border border-red-200">
+      <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+      <h3 className="text-lg font-semibold text-red-700 mb-2">Error Loading Data</h3>
+      <p className="text-red-600 text-center mb-4 px-4">
+        {typeof combinedError === 'string' ? combinedError : 'Failed to load sales data. Please try again.'}
+      </p>
+      <button
+        onClick={fetchAllData}
+        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        disabled={isLoading}
+      >
+        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        Retry
+      </button>
+    </div>
+  );
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading sales data...</span>
-      </div>
-    );
-  }
+  // Loading component
+  const LoadingDisplay = () => (
+    <div className="flex flex-col items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+      <span className="text-gray-600">Loading sales data...</span>
+      <span className="text-sm text-gray-500 mt-2">
+        This may take a few moments for large datasets
+      </span>
+    </div>
+  );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -174,7 +267,8 @@ const SalesForecastPage = ({ storeId, departmentId }: SalesForeCast) => {
               <button
                 key={option.value}
                 onClick={() => setSelectedPeriod(option.value)}
-                className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
+                disabled={isLoading}
+                className={`px-4 py-2 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                   selectedPeriod === option.value
                     ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                     : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
@@ -189,104 +283,116 @@ const SalesForecastPage = ({ storeId, departmentId }: SalesForeCast) => {
           </div>
         </div>
 
-        {/* Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <BarChart3 className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Sales vs Forecast Comparison
-            </h2>
-            <span className="text-sm text-gray-500 ml-auto">
-              ({periodOptions.find(p => p.value === selectedPeriod)?.label})
-            </span>
-          </div>
-          
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="#666"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return `${date.getMonth() + 1}/${date.getDate()}`;
-                  }}
-                />
-                <YAxis 
-                  stroke="#666"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="Actual Sales" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="Forecast" 
-                  stroke="#10b981" 
-                  strokeWidth={3}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* Error Display */}
+        {combinedError && !isLoading && <ErrorDisplay />}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Actual Sales</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ${chartData.reduce((sum, item) => sum + (item['Actual Sales'] || 0), 0).toLocaleString()}
-                </p>
+        {/* Loading Display */}
+        {isLoading && <LoadingDisplay />}
+
+        {/* Chart - Only show when not loading and no error */}
+        {!isLoading && !combinedError && (
+          <>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <div className="flex items-center gap-3 mb-6">
+                <BarChart3 className="h-5 w-5 text-gray-600" />
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Sales vs Forecast Comparison
+                </h2>
+                <span className="text-sm text-gray-500 ml-auto">
+                  ({periodOptions.find(p => p.value === selectedPeriod)?.label})
+                </span>
               </div>
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
+              
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={filteredData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#666"
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                      }}
+                    />
+                    <YAxis 
+                      stroke="#666"
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="actualSales" 
+                      name="Actual Sales"
+                      stroke="#3b82f6" 
+                      strokeWidth={3}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="forecast" 
+                      name="Forecast"
+                      stroke="#10b981" 
+                      strokeWidth={3}
+                      strokeDasharray="5 5"
+                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Forecast</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ${chartData.reduce((sum, item) => sum + (item['Forecast'] || 0), 0).toLocaleString()}
-                </p>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Actual Sales</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${filteredData.reduce((sum, item) => sum + (item.actualSales || 0), 0).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
               </div>
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-green-600" />
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Forecast</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${filteredData.reduce((sum, item) => sum + (item.forecast || 0), 0).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Holiday Weeks</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {filteredData.filter(item => item.isHoliday).length}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-red-600" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Holiday Weeks</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {chartData.filter(item => item.Holiday).length}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

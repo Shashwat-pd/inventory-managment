@@ -9,8 +9,8 @@ export const WeeklySalesApi = createApi({
     baseQueryWithReauth(args, api, { ...extraOptions, baseUrl: `/external` }),
   tagTypes: ["weeklySales"],
   endpoints: (builder) => ({
-    getWeeklySalesList: builder.query<WeeklySalesList, string>({
-      query: () => `/api/weekly_sales/`,
+    getWeeklySalesList: builder.query<WeeklySalesList, {skip: number , limit : number}>({
+      query: ({skip, limit}) => `/api/weekly_sales/?skip=${skip}&limit=${limit}`,
     }),
     putWeeklySales: builder.mutation({
       query: ({ store_id, department_id, week_date, data }) => ({
@@ -40,7 +40,7 @@ export const WeeklySalesApi = createApi({
 
 export const {
   useDeleteWeeklySalesMutation,
-  useGetWeeklySalesListQuery,
   useGetWeeklySalesQuery,
   usePutWeeklySalesMutation,
+  useLazyGetWeeklySalesListQuery
 } = WeeklySalesApi;
