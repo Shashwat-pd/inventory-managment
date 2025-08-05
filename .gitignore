@@ -6,8 +6,8 @@ __pycache__/
 .DS_Store
 *.db
 *.txt
-scripts/
 ML/
+scripts/
 JSONs/
 Inventory_Management_Project_Report.doc
 !requirements.txt
