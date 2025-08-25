@@ -46,7 +46,7 @@ interface DepartmentProductProps {
 
 const DepartmentProduct = ({
   storeId,
-  departmentId,
+  departmentId,    
 }: DepartmentProductProps) => {
   const {
     data: inventoryData,

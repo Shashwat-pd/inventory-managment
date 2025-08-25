@@ -1,20 +1,17 @@
-import DepartmentProduct from "./DepartmentProduct";
+import New from "./New";
 
-// Page Component (DepartmentProducts.tsx)
 interface PageProps {
   params: Promise<{ slug: string[] }>;
 }
 
-const DepartmentProducts = async ({ params }: PageProps) => {
-  // Await params first
+const SalesForeCastNew = async ({ params }: PageProps) => {
   const { slug } = await params;
+
   const slugArray = slug ?? [];
 
-  // Extract store_id and department_id from slug
   const store_id = slugArray[0] ? parseInt(slugArray[0]) : null;
   const department_id = slugArray[1] ? parseInt(slugArray[1]) : null;
 
-  // Handle case where we don't have both IDs
   if (!store_id || !department_id) {
     return (
       <div className="p-4">
@@ -23,12 +20,11 @@ const DepartmentProducts = async ({ params }: PageProps) => {
       </div>
     );
   }
-
   return (
     <div>
-      <DepartmentProduct storeId={store_id} departmentId={department_id} />
+      <New storeId={store_id} departmentId={department_id} />
     </div>
   );
 };
 
-export default DepartmentProducts;
+export default SalesForeCastNew;

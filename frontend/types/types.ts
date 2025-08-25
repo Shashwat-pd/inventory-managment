@@ -46,3 +46,18 @@ export interface InventoryLevel {
   stock_level: number;
   last_updated: string; // ISO 8601 date-time string
 }
+
+export interface IWeeklySales {
+  store_id: number;
+  department_id: number;
+  week_date: string;
+  weekly_sales: number;
+  is_holiday: boolean;
+}
+
+export interface IForeCastSales {
+  store_id: number;
+  department_id: number;
+  week_date: string;
+  predicted_sales: number;
+}

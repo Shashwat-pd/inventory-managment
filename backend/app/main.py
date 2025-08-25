@@ -24,7 +24,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Inventory Management & Forecasting API")
 
-origins = ["http://localhost:3000"]
+origins = ["http://localhost:3000","http://localhost:3001"]
 
 app.add_middleware(
     CORSMiddleware,

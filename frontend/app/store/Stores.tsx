@@ -224,7 +224,7 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
           {/* Button aligned right */}
           <div className="flex justify-end ">
             <Link href={`/store/${store.id}`}>
-              <Button>See Inventory</Button>
+              <Button>See Details</Button>
             </Link>
           </div>
         </div>
