@@ -22,5 +22,4 @@ typing_extensions==4.14.0
 tzdata==2025.2
 urllib3==2.5.0
 uvicorn==0.34.3
--e git+https://github.com/Shashwat-pd/inventory-managment@be15a59d7493e903be87875a87eb834b7f9b6b0a#egg=backend&subdirectory=backend
 
