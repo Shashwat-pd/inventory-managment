@@ -20,7 +20,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useGetStoreInventoryQuery, usePutInventoryMutation } from "@/redux/api/InventoryApi";
+import {
+  useGetStoreInventoryQuery,
+  usePutInventoryMutation,
+} from "@/redux/api/InventoryApi";
 import { useGetProductDetailQuery } from "@/redux/api/ProductApi";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, MoreVertical, Save, X, Settings } from "lucide-react";
@@ -30,6 +33,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ErrorCard from "@/components/ui/Error";
 import Loader from "@/components/ui/Loader";
+import { IconBrandProducthunt } from "@tabler/icons-react";
 
 const inventoryUpdateSchema = z.object({
   store_id: z.number().min(0, "Store id is required"),
@@ -46,7 +50,7 @@ interface DepartmentProductProps {
 
 const DepartmentProduct = ({
   storeId,
-  departmentId,    
+  departmentId,
 }: DepartmentProductProps) => {
   const {
     data: inventoryData,
@@ -59,15 +63,11 @@ const DepartmentProduct = ({
   });
 
   if (inventoryLoading) {
-    return (
-     <Loader/>
-    );
+    return <Loader />;
   }
 
   if (inventoryError) {
-    return (
-     <ErrorCard/>
-    );
+    return <ErrorCard />;
   }
 
   if (!inventoryData || inventoryData.length === 0) {
@@ -90,18 +90,33 @@ const DepartmentProduct = ({
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title={"Products"} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {inventoryData.map((product) => (
-            <ProductCard
-              key={product.product_id}
-              productId={product.product_id}
-              stockLevel={product.stock_level}
-              storeId={storeId}
-              departmentId={departmentId}
-              lastUpdated={product.last_updated}
-              onInventoryUpdate={refetchInventory}
-            />
-          ))}
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <IconBrandProducthunt className="h-5 w-5 text-gray-600" />
+              </div>
+              <div className="">
+                <h1 className="text-2xl  font-semibold ">Products</h1>
+                <p className=" font-small">
+                  These are your Departments Products
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {inventoryData.map((product) => (
+              <ProductCard
+                key={product.product_id}
+                productId={product.product_id}
+                stockLevel={product.stock_level}
+                storeId={storeId}
+                departmentId={departmentId}
+                lastUpdated={product.last_updated}
+                onInventoryUpdate={refetchInventory}
+              />
+            ))}
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -118,13 +133,13 @@ interface ProductCardProps {
   onInventoryUpdate: () => void;
 }
 
-const ProductCard = ({ 
-  productId, 
-  stockLevel, 
-  storeId, 
-  departmentId, 
-  lastUpdated, 
-  onInventoryUpdate 
+const ProductCard = ({
+  productId,
+  stockLevel,
+  storeId,
+  departmentId,
+  lastUpdated,
+  onInventoryUpdate,
 }: ProductCardProps) => {
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -134,7 +149,7 @@ const ProductCard = ({
     isLoading,
     error,
   } = useGetProductDetailQuery(productId);
-  
+
   const [putInventory, { isLoading: isUpdating }] = usePutInventoryMutation();
 
   const {
@@ -224,7 +239,7 @@ const ProductCard = ({
         <div className="mt-4">
           <span
             className={`px-2 py-1 rounded text-sm ${
-              stockLevel > 0
+              stockLevel > 10
                 ? "bg-green-100 text-green-800"
                 : "bg-red-100 text-red-800"
             }`}
@@ -245,7 +260,7 @@ const ProductCard = ({
               {productDetails?.name || `Product ${productId}`}
               <span
                 className={`px-2 py-1 ml-1.5 rounded text-sm font-medium ${
-                  stockLevel > 0
+                  stockLevel > 10
                     ? "bg-green-100 text-green-800"
                     : "bg-red-100 text-red-800"
                 }`}
@@ -279,10 +294,12 @@ const ProductCard = ({
             </span>
 
             <div className="flex items-center">
-              <span className="text-sm text-gray-500 mr-2">ID: {productId}</span>
+              {/* <span className="text-sm text-gray-500 mr-2">
+                ID: {productId}
+              </span> */}
               <div
                 className={`w-3 h-3 rounded-full ${
-                  stockLevel > 0 ? "bg-green-500" : "bg-red-500"
+                  stockLevel > 10 ? "bg-green-500" : "bg-red-500"
                 }`}
               ></div>
             </div>
@@ -303,9 +320,7 @@ const ProductCard = ({
             <DialogTitle className="text-xl font-bold">
               {productDetails?.name}
             </DialogTitle>
-            <p className="text-sm text-gray-500">
-              Inventory Management
-            </p>
+            <p className="text-sm text-gray-500">Inventory Management</p>
           </DialogHeader>
 
           <div className="space-y-6">
@@ -341,10 +356,7 @@ const ProductCard = ({
                 </div>
 
                 {isEditing ? (
-                  <form
-                    onSubmit={handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
                       <Label
                         htmlFor="stock_level"
@@ -414,8 +426,7 @@ const ProductCard = ({
                   Last Updated
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {new Date(lastUpdated).toLocaleDateString()}{" "}
-                  at{" "}
+                  {new Date(lastUpdated).toLocaleDateString()} at{" "}
                   {new Date(lastUpdated).toLocaleTimeString()}
                 </p>
               </div>
