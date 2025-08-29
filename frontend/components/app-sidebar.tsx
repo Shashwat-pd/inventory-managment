@@ -41,7 +41,12 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    // {
+    {
+      title: "Dashboard",
+      url: "/",
+      icon: IconDashboard,
+    },
+  // {
     //   title: "Inventory",
     //   url: "/inventory",
     //   icon: IconListDetails,

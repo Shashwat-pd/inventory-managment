@@ -233,7 +233,6 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onEdit }) => {
   );
 };
 
-
 const StorePage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -254,8 +253,8 @@ const StorePage: React.FC = () => {
   if (error) {
     return (
       <div className="w-full justify-center-safe">
-     <ErrorCard/>
-     </div>
+        <ErrorCard />
+      </div>
     );
   }
 
@@ -348,7 +347,7 @@ const StorePage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, index) => (
-                <Loader key={index}/>
+                <Loader key={index} />
               ))
             ) : stores && stores.length > 0 ? (
               stores.map((store) => (

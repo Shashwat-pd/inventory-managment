@@ -7,8 +7,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-
-import data from "./dashboard/data.json"
+import data from "../public/data.json"
 
 export default function Page() {
   return (
@@ -34,8 +33,10 @@ export default function Page() {
             </div>
           </div>
         </div>
-      </SidebarInset>
+    </SidebarInset>
     </SidebarProvider>
   )
-};
+}
+
+
 
