@@ -112,7 +112,7 @@ const useBatchSalesData = (
         setSalesData(combinedData);
       } catch (err) {
         console.error("Error fetching batch data:", err);
-        setError(true);
+        // setError(true);
       } finally {
         setLoading(false);
       }
