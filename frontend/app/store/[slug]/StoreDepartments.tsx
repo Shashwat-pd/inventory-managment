@@ -1,7 +1,14 @@
 "use client";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useGetDepartmentsQuery } from "@/redux/api/DepartmentsApi";
 import { IconHome2 } from "@tabler/icons-react";
@@ -45,7 +52,7 @@ const StoreDepartments = ({ slug }: Props) => {
             <div>
               <h1 className="text-base font-medium ">Select Department</h1>
               <p className=" font-small">
-                Choose a Department to View Your Inventory
+                Choose a Department to View Your Stores Descriptions
               </p>
             </div>
           </div>
@@ -55,22 +62,39 @@ const StoreDepartments = ({ slug }: Props) => {
                 className="hover:shadow-lg transition-shadow duration-200"
                 key={department.id}
               >
-                <Link href={`/products/${slug}/${department.id}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <Home className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-base font-medium">
-                            {department.name}
-                          </CardTitle>
-                        </div>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Home className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base font-medium">
+                          {department.name}
+                        </CardTitle>
                       </div>
                     </div>
-                  </CardHeader>
-                </Link>
+                  </div>
+                </CardHeader>
+
+                <CardDescription className="flex items-center justify-between">
+                  <Link href={`/products/${slug}/${department.id}`}>
+                    <Button
+                      variant="secondary"
+                      className="mx-4 cursor-pointer border-2"
+                    >
+                      Inventory
+                    </Button>
+                  </Link>
+
+                  <Button
+                    variant="secondary"
+                    className="d-flex justify-content-end mx-4 cursor-pointer border-2"
+                  >
+                    Sales and Forecast
+                  </Button>
+                </CardDescription>
+                {/* </Link> */}
               </Card>
             ))}
           </div>

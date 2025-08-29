@@ -43,10 +43,10 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/",
       icon: IconDashboard,
     },
-    // {
+  // {
     //   title: "Inventory",
     //   url: "/inventory",
     //   icon: IconListDetails,

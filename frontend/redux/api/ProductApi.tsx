@@ -9,8 +9,8 @@ export const ProductApi = createApi({
     baseQueryWithReauth(args, api, { ...extraOptions, baseUrl: `/external` }),
   tagTypes: ["product"],
   endpoints: (builder) => ({
-    getProducts: builder.query<ProductResponse, string>({
-      query: () => `/api/products/`,
+    getProducts: builder.query<ProductResponse, {skip:number,limit:number}>({
+      query: ({skip,limit}) => `/api/products/?skip=${skip}&limit=${limit}`,
     }),
     postProduct: builder.mutation({
       query: (data) => ({
