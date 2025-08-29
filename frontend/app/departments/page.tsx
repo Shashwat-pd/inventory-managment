@@ -5,7 +5,9 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import ErrorCard from "@/components/ui/Error";
 import Loader from "@/components/ui/Loader";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import DepartmentCard from "@/components/ui/universeIoUi/DepartmentCard";
 import { useGetDepartmentsQuery } from "@/redux/api/DepartmentsApi";
+import { IconBuildingBridge2Filled } from "@tabler/icons-react";
 import { Home } from "lucide-react";
 
 import React from "react";
@@ -18,10 +20,18 @@ const StoreDepartments = () => {
   } = useGetDepartmentsQuery("");
 
   if (DepartmentLoading) {
-    return <div><Loader/></div>;
+    return (
+      <div>
+        <Loader />
+      </div>
+    );
   }
   if (DepartmentError) {
-    return <div><ErrorCard/></div>;
+    return (
+      <div>
+        <ErrorCard />
+      </div>
+    );
   }
 
   return (
@@ -36,30 +46,24 @@ const StoreDepartments = () => {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title={"Departments"} />
-          <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 md:grid-cols-3  lg:grid-cols-4">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <IconBuildingBridge2Filled className="h-5 w-5 text-gray-600" />
+              </div>
+              <div className="">
+                <h1 className="text-2xl  font-semibold ">Departments</h1>
+                <p className=" font-small">These are your departments</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4">
             {Departments?.map((department) => (
-              <Card
-                className="hover:shadow-lg transition-shadow duration-200"
-                key={department.id}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <Home className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base font-medium">
-                          {department.name}
-                        </CardTitle>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
+              <DepartmentCard key={department.id} title={department.name} />
             ))}
           </div>
-        
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
