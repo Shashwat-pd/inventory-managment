@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { BookCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Pagination from "@/components/pagination";
 
 // Zod schema for product validation
 const productSchema = z.object({
@@ -49,18 +50,22 @@ const ProductsPage: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showProductDetail, setShowProductDetail] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   const router = useRouter();
 
   // RTK Query hooks
   const { data: productsData, isLoading: productsLoading } =
-    useGetProductsQuery("");
+    useGetProductsQuery({ skip: currentPage, limit: itemsPerPage });
   const { data: departmentsData } = useGetDepartmentsQuery("");
   const { data: productDetailData } = useGetProductDetailQuery(
     selectedProductId || 0,
     { skip: !selectedProductId }
   );
-
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
   const [postProduct, { isLoading: isCreating }] = usePostProductMutation();
   const [putProduct, { isLoading: isUpdating }] = usePutProductMutation();
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
@@ -228,7 +233,6 @@ const ProductsPage: React.FC = () => {
               </Card>
             ))}
           </div>
-
           {/* Product Detail Modal */}
           <Dialog
             open={showProductDetail}
@@ -541,6 +545,12 @@ const ProductsPage: React.FC = () => {
               )}
             </DialogContent>
           </Dialog>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil((46 ) / itemsPerPage)}
+            onPageChange={handlePageChange}
+            className="mt-14"
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
