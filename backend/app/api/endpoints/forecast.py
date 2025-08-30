@@ -7,6 +7,7 @@ from db.get_db import get_db
 from app.crud.forecast import (
     get_forecast,
     get_forecasts,
+    get_forecasts_by_store_department,
 )
 from app.schemas.forecast import ForecastCreate, ForecastOut
 
@@ -35,4 +36,16 @@ def read_forecast(
         raise HTTPException(status_code=404, detail="Forecast not found")
     return obj
 
+@router.get(
+    "/{store_id}/{department_id}",
+    response_model=List[ForecastOut],
+)
+def list_forecasts_by_store_department(
+    store_id: int,
+    department_id: int,
+    skip: int = 0,
+    limit: int | None = None,
+    db: Session = Depends(get_db),
+):
+    return get_forecasts_by_store_department(db, store_id, department_id, skip, limit)
 
