@@ -127,7 +127,7 @@ const useBatchSalesData = (
 const New = ({ storeId, departmentId }: SalesForeCast) => {
   const [selectedPeriod, setSelectedPeriod] = useState<number>(4);
 
-  const startDate = new Date("2012-10-26");
+  const startDate = new Date("2012-11-22");
 
   const weekDates = useMemo(() => {
     return generateWeekDates(startDate, selectedPeriod);
