@@ -12,7 +12,7 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useGetDepartmentsQuery } from "@/redux/api/DepartmentsApi";
 import { IconHome2 } from "@tabler/icons-react";
-import { Home } from "lucide-react";
+import { Home, Loader } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 interface Props {
@@ -26,7 +26,7 @@ const StoreDepartments = ({ slug }: Props) => {
   } = useGetDepartmentsQuery("");
 
   if (DepartmentLoading) {
-    return <div>loading</div>;
+    return <Loader/>;
   }
   if (DepartmentError) {
     return <div>error loading data</div>;
@@ -86,13 +86,14 @@ const StoreDepartments = ({ slug }: Props) => {
                       Inventory
                     </Button>
                   </Link>
-
+                  <Link href={`/new/${slug}/${department.id}`}>
                   <Button
                     variant="secondary"
                     className="d-flex justify-content-end mx-4 cursor-pointer border-2"
                   >
                     Sales and Forecast
                   </Button>
+                  </Link>
                 </CardDescription>
                 {/* </Link> */}
               </Card>

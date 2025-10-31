@@ -9,8 +9,10 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Scatter,
+  ComposedChart,
 } from "recharts";
-import { Calendar, TrendingUp, BarChart3 } from "lucide-react";
+import { Calendar, TrendingUp, BarChart3, AlertCircle, Loader } from "lucide-react";
 import { ForeCastApi, useGetForeCastQuery } from "@/redux/api/ForeCastApi";
 import {
   useGetWeeklySalesQuery,
@@ -18,6 +20,9 @@ import {
 } from "@/redux/api/WeeklySalesApi";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
 
 interface SalesForeCast {
   storeId: number;
@@ -65,25 +70,35 @@ const useBatchSalesData = (
       try {
         // Create promises for all API calls
         const forecastPromises = weekDates.map(async (weekDate) => {
-          const result = await dispatch(
-            ForeCastApi.endpoints.getForeCast.initiate({
-              store_id: storeId,
-              department_id: departmentId,
-              week_date: weekDate,
-            })
-          ).unwrap(); // unwrap to get raw result
-          return { weekDate, forecast: result };
+          try {
+            const result = await dispatch(
+              ForeCastApi.endpoints.getForeCast.initiate({
+                store_id: storeId,
+                department_id: departmentId,
+                week_date: weekDate,
+              })
+            ).unwrap();
+            return { weekDate, forecast: result, error: false };
+          } catch (err) {
+            console.error(`Forecast error for ${weekDate}:`, err);
+            return { weekDate, forecast: null, error: true };
+          }
         });
 
         const salesPromises = weekDates.map(async (weekDate) => {
-          const result = await dispatch(
-            WeeklySalesApi.endpoints.getWeeklySales.initiate({
-              store_id: storeId,
-              department_id: departmentId,
-              week_date: weekDate,
-            })
-          ).unwrap();
-          return { weekDate, sales: result };
+          try {
+            const result = await dispatch(
+              WeeklySalesApi.endpoints.getWeeklySales.initiate({
+                store_id: storeId,
+                department_id: departmentId,
+                week_date: weekDate,
+              })
+            ).unwrap();
+            return { weekDate, sales: result, error: false };
+          } catch (err) {
+            console.error(`Sales error for ${weekDate}:`, err);
+            return { weekDate, sales: null, error: true };
+          }
         });
 
         // Wait for all forecasts and sales data
@@ -99,9 +114,19 @@ const useBatchSalesData = (
           );
           const salesData = salesResults.find((s) => s.weekDate === weekDate);
 
+          const hasForecastError = forecastData?.error || false;
+          const forecastValue = hasForecastError 
+            ? null 
+            : (forecastData?.forecast?.predicted_sales || 0);
+
           return {
             week_date: weekDate,
-            forecast: forecastData?.forecast?.predicted_sales || 0,
+            forecast: forecastValue,
+            forecast_error: hasForecastError,
+            // For red error dot, we need a value at the sales level
+            forecast_error_indicator: hasForecastError 
+              ? (salesData?.sales?.weekly_sales || 0)
+              : null,
             actual_sales: salesData?.sales?.weekly_sales || 0,
             is_holiday: salesData?.sales?.is_holiday || false,
             loading: false,
@@ -112,7 +137,6 @@ const useBatchSalesData = (
         setSalesData(combinedData);
       } catch (err) {
         console.error("Error fetching batch data:", err);
-        // setError(true);
       } finally {
         setLoading(false);
       }
@@ -152,8 +176,12 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
     date: item.week_date,
     "Actual Sales": item.actual_sales,
     Forecast: item.forecast,
+    "Forecast Error": item.forecast_error_indicator,
     Holiday: item.is_holiday,
+    forecastError: item.forecast_error,
   }));
+
+  const missingForecastCount = salesData.filter(item => item.forecast_error).length;
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -162,11 +190,18 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-800">{`Week: ${label}`}</p>
           <p className="text-blue-600">
-            {`Actual Sales: $${payload[0]?.value?.toLocaleString() || 0}`}
+            {`Actual Sales: $${data["Actual Sales"]?.toLocaleString() || 0}`}
           </p>
-          <p className="text-green-600">
-            {`Forecast: $${payload[1]?.value?.toLocaleString() || 0}`}
-          </p>
+          {data.forecastError ? (
+            <p className="text-red-600 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" />
+              Forecast: Not Available
+            </p>
+          ) : (
+            <p className="text-green-600">
+              {`Forecast: $${data.Forecast?.toLocaleString() || 0}`}
+            </p>
+          )}
           {data.Holiday && (
             <p className="text-red-500 text-xs mt-1">🎉 Holiday Week</p>
           )}
@@ -190,29 +225,55 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading sales data...</span>
-      </div>
+      <Loader />
     );
   }
 
   return (
+      <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+           <AppSidebar variant="inset" />
+   <SidebarInset>
+        <SiteHeader title={"Sales Forecast Dashboard"} />
+
+
+
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <TrendingUp className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">
-              Sales Forecast Dashboard
-            </h1>
-          </div>
-          <p className="text-gray-600">
-            Store ID: {storeId} | Department ID: {departmentId}
-          </p>
-        </div>
+        {/* <div className="mb-8"> */}
+        {/*   <div className="flex items-center gap-3 mb-4"> */}
+        {/*     <TrendingUp className="h-8 w-8 text-blue-600" /> */}
+        {/*     <h1 className="text-3xl font-bold text-gray-900"> */}
+        {/*       Sales Forecast Dashboard */}
+        {/*     </h1> */}
+        {/*   </div> */}
+        {/*   <p className="text-gray-600"> */}
+        {/*     Store ID: {storeId} | Department ID: {departmentId} */}
+        {/*   </p> */}
+        {/* </div> */}
 
+        {/* {/* Warning Banner for Missing Forecasts */} 
+        {/*  {missingForecastCount > 0 && ( */}
+        {/*   <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-start gap-3"> */}
+        {/*     <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" /> */}
+        {/*     <div> */}
+        {/*       <p className="text-red-900 font-semibold"> */}
+        {/*         Missing Forecast Data */}
+        {/*       </p> */}
+        {/*       <p className="text-red-700 text-sm"> */}
+        {/*         {missingForecastCount} week{missingForecastCount > 1 ? 's' : ''} {missingForecastCount > 1 ? 'have' : 'has'} no forecast data available.  */}
+        {/*         These are indicated by red dots on the chart. */}
+        {/*       </p> */}
+        {/*     </div> */}
+        {/*   </div> */}
+        {/* )}  
         {/* Time Period Selector */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
@@ -255,7 +316,7 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
 
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
+              <ComposedChart
                 data={chartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
@@ -283,6 +344,7 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
                   strokeWidth={3}
                   dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: "#3b82f6", strokeWidth: 2 }}
+                  connectNulls
                 />
                 <Line
                   type="monotone"
@@ -292,14 +354,39 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
                   strokeDasharray="5 5"
                   dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2 }}
+                  connectNulls
                 />
-              </LineChart>
+                {/* Red dots for missing forecast data */}
+                <Scatter
+                  dataKey="Forecast Error"
+                  fill="#ef4444"
+                  shape="circle"
+                  r={6}
+                  name="Missing Forecast"
+                />
+              </ComposedChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Legend explanation */}
+          <div className="mt-4 flex items-center gap-6 text-sm text-gray-600 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5 bg-blue-600"></div>
+              <span>Actual Sales</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5 bg-green-600 border-t-2 border-dashed border-green-600"></div>
+              <span>Forecast</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <span>Missing Forecast Data</span>
+            </div>
           </div>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -353,9 +440,29 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
               </div>
             </div>
           </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Missing Forecasts
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {missingForecastCount}
+                </p>
+              </div>
+              <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <AlertCircle className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+    </SidebarInset>
+
+        </SidebarProvider>
+
   );
 };
 

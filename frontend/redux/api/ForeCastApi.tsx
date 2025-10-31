@@ -23,7 +23,11 @@ export const ForeCastApi = createApi({
     >({
       query: ({ skip, limit }) => `/api/forecasts/?skip=${skip}&limit=${limit}`,
     }),
+    getForeCastByStoreDepartment: builder.query<SalesForeCast, { store_id: number; department_id: number, skip: number, limit: number }>({
+      query: ({ skip, limit, store_id, department_id }) => `/api/forecasts/${store_id}/${department_id}?skip=${skip}&limit=${limit}`
+    })
   }),
 });
 
-export const { useGetForeCastQuery, useLazyGetForeCastListQuery } = ForeCastApi;
+export const { useGetForeCastQuery, useLazyGetForeCastListQuery, useGetForeCastByStoreDepartmentQuery } = ForeCastApi;
+
