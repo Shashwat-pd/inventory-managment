@@ -1,16 +1,15 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import {
-  LineChart,
-  Line,
+  Area,
+  AreaChart,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
-  ResponsiveContainer,
   Scatter,
   ComposedChart,
+  ResponsiveContainer,
 } from "recharts";
 import { Calendar, TrendingUp, BarChart3, AlertCircle, Loader } from "lucide-react";
 import { ForeCastApi, useGetForeCastQuery } from "@/redux/api/ForeCastApi";
@@ -23,6 +22,30 @@ import { AppDispatch } from "@/redux/store";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+} from "@/components/ui/chart";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SalesForeCast {
   storeId: number;
@@ -120,10 +143,9 @@ const useBatchSalesData = (
             : (forecastData?.forecast?.predicted_sales || 0);
 
           return {
-            week_date: weekDate,
+            date: weekDate,
             forecast: forecastValue,
             forecast_error: hasForecastError,
-            // For red error dot, we need a value at the sales level
             forecast_error_indicator: hasForecastError 
               ? (salesData?.sales?.weekly_sales || 0)
               : null,
@@ -148,7 +170,19 @@ const useBatchSalesData = (
   return { salesData, loading, error };
 };
 
+const chartConfig = {
+  actual_sales: {
+    label: "Actual Sales",
+    color: "hsl(var(--primary))",
+  },
+  forecast: {
+    label: "Forecast",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig;
+
 const New = ({ storeId, departmentId }: SalesForeCast) => {
+  const isMobile = useIsMobile();
   const [selectedPeriod, setSelectedPeriod] = useState<number>(4);
 
   const startDate = new Date("2012-10-26");
@@ -172,14 +206,13 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
     { value: 52, label: "1 Year", weeks: 52 },
   ];
 
-  const chartData = salesData.map((item) => ({
-    date: item.week_date,
-    "Actual Sales": item.actual_sales,
-    Forecast: item.forecast,
-    "Forecast Error": item.forecast_error_indicator,
-    Holiday: item.is_holiday,
-    forecastError: item.forecast_error,
-  }));
+  useEffect(() => {
+    if (isMobile) {
+      setSelectedPeriod(4);
+    }
+  }, [isMobile]);
+
+  const chartData = salesData;
 
   const missingForecastCount = salesData.filter(item => item.forecast_error).length;
 
@@ -187,23 +220,29 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-800">{`Week: ${label}`}</p>
-          <p className="text-blue-600">
-            {`Actual Sales: $${data["Actual Sales"]?.toLocaleString() || 0}`}
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="text-xs font-medium text-gray-600 mb-2">
+            {new Date(data.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
           </p>
-          {data.forecastError ? (
-            <p className="text-red-600 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" />
-              Forecast: Not Available
+          <p className="text-sm text-blue-600">
+            Actual: ${data.actual_sales?.toLocaleString() || 0}
+          </p>
+          {data.forecast_error ? (
+            <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+              <AlertCircle className="h-3 w-3" />
+              Forecast N/A
             </p>
           ) : (
-            <p className="text-green-600">
-              {`Forecast: $${data.Forecast?.toLocaleString() || 0}`}
+            <p className="text-sm text-green-600">
+              Forecast: ${data.forecast?.toLocaleString() || 0}
             </p>
           )}
-          {data.Holiday && (
-            <p className="text-red-500 text-xs mt-1">🎉 Holiday Week</p>
+          {data.is_holiday && (
+            <p className="text-xs text-purple-600 mt-1">🎉 Holiday</p>
           )}
         </div>
       );
@@ -213,24 +252,31 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
 
   if (hasError) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="text-red-500 text-xl mb-2">⚠️</div>
-          <p className="text-red-600 font-semibold">Error loading sales data</p>
-          <p className="text-gray-600 text-sm">Please try again later</p>
-        </div>
-      </div>
+      <Card className="@container/card">
+        <CardContent className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 font-semibold">Error loading sales data</p>
+            <p className="text-gray-600 text-sm">Please try again later</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (isLoading) {
     return (
-      <Loader />
+      <Card className="@container/card">
+        <CardContent className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <span className="ml-3 text-gray-600">Loading sales data...</span>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-      <SidebarProvider
+    <SidebarProvider
       style={
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -238,231 +284,253 @@ const New = ({ storeId, departmentId }: SalesForeCast) => {
         } as React.CSSProperties
       }
     >
-           <AppSidebar variant="inset" />
-   <SidebarInset>
+      <AppSidebar variant="inset" />
+      <SidebarInset>
         <SiteHeader title={"Sales Forecast Dashboard"} />
 
+        <div className="p-6 bg-gray-50 min-h-screen">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Chart Card */}
+            <Card className="@container/card">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <CardTitle>Sales vs Forecast Comparison</CardTitle>
+                    <CardDescription>
+                      Store ID: {storeId} | Department ID: {departmentId}
+                    </CardDescription>
+                  </div>
+                </div>
 
+                <CardAction>
+                  <ToggleGroup
+                    type="single"
+                    value={selectedPeriod.toString()}
+                    onValueChange={(value) => setSelectedPeriod(Number(value))}
+                    variant="outline"
+                    className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
+                  >
+                    <ToggleGroupItem value="52">Last 1 year</ToggleGroupItem>
+                    <ToggleGroupItem value="24">Last 6 months</ToggleGroupItem>
+                    <ToggleGroupItem value="12">Last 3 months</ToggleGroupItem>
+                    <ToggleGroupItem value="8">Last 2 months</ToggleGroupItem>
+                    <ToggleGroupItem value="4">Last 1 month</ToggleGroupItem>
+                  </ToggleGroup>
+                  <Select 
+                    value={selectedPeriod.toString()} 
+                    onValueChange={(value) => setSelectedPeriod(Number(value))}
+                  >
+                    <SelectTrigger
+                      className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
+                      size="sm"
+                      aria-label="Select a value"
+                    >
+                      <SelectValue placeholder="Select period" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="52" className="rounded-lg">
+                        Last 1 year
+                      </SelectItem>
+                      <SelectItem value="24" className="rounded-lg">
+                        Last 6 months
+                      </SelectItem>
+                      <SelectItem value="12" className="rounded-lg">
+                        Last 3 months
+                      </SelectItem>
+                      <SelectItem value="8" className="rounded-lg">
+                        Last 2 months
+                      </SelectItem>
+                      <SelectItem value="4" className="rounded-lg">
+                        Last 1 month
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardAction>
+              </CardHeader>
 
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        {/* <div className="mb-8"> */}
-        {/*   <div className="flex items-center gap-3 mb-4"> */}
-        {/*     <TrendingUp className="h-8 w-8 text-blue-600" /> */}
-        {/*     <h1 className="text-3xl font-bold text-gray-900"> */}
-        {/*       Sales Forecast Dashboard */}
-        {/*     </h1> */}
-        {/*   </div> */}
-        {/*   <p className="text-gray-600"> */}
-        {/*     Store ID: {storeId} | Department ID: {departmentId} */}
-        {/*   </p> */}
-        {/* </div> */}
+              <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+                <ChartContainer
+                  config={chartConfig}
+                  className="aspect-auto h-[250px] w-full"
+                >
+                  <ComposedChart data={chartData}>
+                    <defs>
+                      <linearGradient id="fillActualSales" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-actual_sales)"
+                          stopOpacity={1.0}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-actual_sales)"
+                          stopOpacity={0.1}
+                        />
+                      </linearGradient>
+                      <linearGradient id="fillForecast" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-forecast)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-forecast)"
+                          stopOpacity={0.1}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return date.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        });
+                      }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      dataKey="forecast"
+                      type="natural"
+                      fill="url(#fillForecast)"
+                      stroke="var(--color-forecast)"
+                      strokeWidth={2}
+                      connectNulls
+                    />
+                    <Area
+                      dataKey="actual_sales"
+                      type="natural"
+                      fill="url(#fillActualSales)"
+                      stroke="var(--color-actual_sales)"
+                      strokeWidth={2}
+                      connectNulls
+                    />
+                    {/* Red dots for missing forecast data */}
+                    <Scatter
+                      dataKey="forecast_error_indicator"
+                      fill="#ef4444"
+                      shape="circle"
+                      r={6}
+                      name="Missing Forecast"
+                    />
+                  </ComposedChart>
+                </ChartContainer>
 
-        {/* {/* Warning Banner for Missing Forecasts */} 
-        {/*  {missingForecastCount > 0 && ( */}
-        {/*   <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-start gap-3"> */}
-        {/*     <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" /> */}
-        {/*     <div> */}
-        {/*       <p className="text-red-900 font-semibold"> */}
-        {/*         Missing Forecast Data */}
-        {/*       </p> */}
-        {/*       <p className="text-red-700 text-sm"> */}
-        {/*         {missingForecastCount} week{missingForecastCount > 1 ? 's' : ''} {missingForecastCount > 1 ? 'have' : 'has'} no forecast data available.  */}
-        {/*         These are indicated by red dots on the chart. */}
-        {/*       </p> */}
-        {/*     </div> */}
-        {/*   </div> */}
-        {/* )}  
-        {/* Time Period Selector */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Calendar className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Select Time Period
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {periodOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setSelectedPeriod(option.value)}
-                className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
-                  selectedPeriod === option.value
-                    ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50"
-                }`}
-              >
-                {option.label}
-                <span className="text-xs block mt-1 opacity-75">
-                  {option.weeks} weeks
-                </span>
-              </button>
-            ))}
+                {/* Legend explanation */}
+                <div className="mt-4 flex items-center gap-6 text-sm text-gray-600 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-0.5 bg-[hsl(var(--primary))]"></div>
+                    <span>Actual Sales</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-0.5 bg-[hsl(var(--chart-2))]"></div>
+                    <span>Forecast</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span>Missing Forecast Data</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Actual Sales
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        $
+                        {chartData
+                          .reduce((sum, item) => sum + (item.actual_sales || 0), 0)
+                          .toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Forecast
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        $
+                        {chartData
+                          .reduce((sum, item) => sum + (item.forecast || 0), 0)
+                          .toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Holiday Weeks
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {chartData.filter((item) => item.is_holiday).length}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
+                      <Calendar className="h-6 w-6 text-red-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Missing Forecasts
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {missingForecastCount}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <AlertCircle className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
-
-        {/* Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <BarChart3 className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Sales vs Forecast Comparison
-            </h2>
-            <span className="text-sm text-gray-500 ml-auto">
-              ({periodOptions.find((p) => p.value === selectedPeriod)?.label})
-            </span>
-          </div>
-
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis
-                  dataKey="date"
-                  stroke="#666"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return `${date.getMonth() + 1}/${date.getDate()}`;
-                  }}
-                />
-                <YAxis
-                  stroke="#666"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="Actual Sales"
-                  stroke="#3b82f6"
-                  strokeWidth={3}
-                  dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: "#3b82f6", strokeWidth: 2 }}
-                  connectNulls
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Forecast"
-                  stroke="#10b981"
-                  strokeWidth={3}
-                  strokeDasharray="5 5"
-                  dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2 }}
-                  connectNulls
-                />
-                {/* Red dots for missing forecast data */}
-                <Scatter
-                  dataKey="Forecast Error"
-                  fill="#ef4444"
-                  shape="circle"
-                  r={6}
-                  name="Missing Forecast"
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Legend explanation */}
-          <div className="mt-4 flex items-center gap-6 text-sm text-gray-600 flex-wrap">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5 bg-blue-600"></div>
-              <span>Actual Sales</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5 bg-green-600 border-t-2 border-dashed border-green-600"></div>
-              <span>Forecast</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span>Missing Forecast Data</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Actual Sales
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  $
-                  {chartData
-                    .reduce((sum, item) => sum + (item["Actual Sales"] || 0), 0)
-                    .toLocaleString()}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Forecast
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  $
-                  {chartData
-                    .reduce((sum, item) => sum + (item["Forecast"] || 0), 0)
-                    .toLocaleString()}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Holiday Weeks
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {chartData.filter((item) => item.Holiday).length}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Missing Forecasts
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {missingForecastCount}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    </SidebarInset>
-
-        </SidebarProvider>
-
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 
