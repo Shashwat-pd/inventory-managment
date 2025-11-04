@@ -64,8 +64,6 @@
   Create .env at the project root (next to backend/) with your database URL:
 
   DATABASE_URL=sqlite:///./inventory.db
-  # or
-  # DATABASE_URL=postgresql+psycopg://user:password@localhost:5432/inventory
 
   ### Seed essential data
 
